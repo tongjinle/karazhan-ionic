@@ -1,12 +1,36 @@
 angular.module('starter.services', [])
-	.factory('karazhan', function() {
-		var addr = 'http://localhost:3000/';
+	.factory('karazhan', ['$http',function($http) {
+			var addr = 'http://localhost:3000';
+	
+	
+			return {
+				login:function(username,password){
+					return $http({
+						url:addr+'/login',
+						method:'POST',
+						data:{
+							username:username,
+							password:password
+						}
+					});
+				},
+				getMyUsername:function(token){
+					return $http({
+						url:addr+'/user/getMyUsername',
+						method:'GET',
+						params:{
+							token:token
+						}
+					});
+				}
+				// getRoomList:function(){
+				// 	return $http({
+				// 		url:'room'
+				// 	});
+				// }
 
-
-		return {
-			
-		};
-	})
+			};
+		}])
 
 .factory('Chats', function() {
 	// Might use a resource here that returns a JSON array

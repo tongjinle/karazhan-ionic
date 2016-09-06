@@ -1,12 +1,47 @@
 angular.module('starter.controllers', [])
 
-.controller('roomListCtrl', function($scope) {
-	$scope.kk = {};
-	$scope.kk.abc = 'abc';
-	$scope.log = function() {
-		console.log($scope.kk.abc);
-	}
-})
+.controller('roomListCtrl', ['$scope', '$location', 'karazhan', function($scope, $location, karazhan) {
+
+	$scope.roomList = [];
+
+	$scope.statusDict = {
+		'0':'ion-ios-plus',
+		'1':'ion-ios-cog-outline',
+		'2':'ion-ios-cog-outline',
+		'3':'ion-ios-checkmark'
+	};
+
+	$scope.statusTxtDict = {
+
+	};
+
+	var page = $scope.page = {
+		isMine: 0,
+		status: -1,
+		pageIndex: 0,
+		pageSize: 8,
+		totalCount: 0
+	};
+	$scope.getRoomList = function(isMine, status, pageIndex, pageSize) {
+		var token = localStorage.getItem('token');
+		karazhan.getRoomList(token, page.isMine, page.status, page.pageIndex, page.pageSize)
+			.success(function(data) {
+				if (!data.flag) {
+					$location.path('#/tab/userLogin');
+				} else {
+					$scope.roomList = data.roomList;
+					page.totalCount = data.totalCount;
+				}
+			});
+	};
+
+	$scope.enterRoom = function(roomId){
+
+	};
+
+	$scope.getRoomList();
+
+}])
 
 .controller('gameCtrl', function($scope, Chats) {
 	// With the new view caching in Ionic, Controllers are only called
@@ -69,6 +104,19 @@ angular.module('starter.controllers', [])
 					$scope.getMyUsername();
 				}
 			});
+	};
+
+	$scope.logout = function(){
+		var token = localStorage.getItem('token');
+		if(!token){
+			$scope.isLogin = true;
+			return;
+		}
+
+		karazhan.logout(token)
+		.success(function(data){
+			$scope.isLogin = !data.flag;
+		});
 	};
 
 	$scope.gotoRoomList = function() {

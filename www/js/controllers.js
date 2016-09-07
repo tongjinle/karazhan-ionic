@@ -27,7 +27,7 @@ angular.module('starter.controllers', [])
 		karazhan.getRoomList(token, page.isMine, page.status, page.pageIndex, page.pageSize)
 			.success(function(data) {
 				if (!data.flag) {
-					$location.path('#/tab/userLogin');
+					$location.path('tab/userLogin');
 				} else {
 					$scope.roomList = data.roomList;
 					page.totalCount = data.totalCount;
@@ -35,28 +35,80 @@ angular.module('starter.controllers', [])
 			});
 	};
 
-	$scope.enterRoom = function(roomId){
+	$scope.enterRoom = function(room){
+		$location.path('tab/game/'+room.id);
+		// $location.path('tab/game');
+		// $location.path('tab/userLogin');
+	};
 
+	$scope.getTitle = function(room){
+		return room.playerList.map(function(n){return n.playerName;}).join(' VS ');
+	};
+
+	$scope.getRelation = function(room){
+		var username = localStorage.getItem('username');
+		if(!username){
+			return {
+				isMine:false,
+				isTurn:false
+			};
+		}
+
+		var user = _.find(room.playerList,function(p){return p.playerName == username;});
+		return {
+			isMine:!!user,
+			isTurn:user &&user.status ==3
+		};
 	};
 
 	$scope.getRoomList();
 
 }])
 
-.controller('gameCtrl', function($scope, Chats) {
-	// With the new view caching in Ionic, Controllers are only called
-	// when they are recreated or on app start, instead of every page change.
-	// To listen for when this page is active (for example, to refresh data),
-	// listen for the $ionicView.enter event:
-	//
-	//$scope.$on('$ionicView.enter', function(e) {
-	//});
+.controller('gameCtrl', ['$scope','$stateParams','karazhan',function($scope, $stateParams,karazhan) {
+	console.log($stateParams.roomId);
 
-	$scope.chats = Chats.all();
-	$scope.remove = function(chat) {
-		Chats.remove(chat);
+	$scope.roomId = $stateParams.roomId;
+
+	$scope.getRoomInfo = function(){
+		var token = localStorage.getItem('token');
+		var roomId = $scope.roomId;
+
+		karazhan.getRoomInfo(token,roomId)
+		.success(function(data){
+			if(!data.flag){
+				// 错误
+			}
+
+			console.log(data.info);
+		});
 	};
-})
+
+	// render helper START 	---
+
+	var render = {
+		all:function(info){
+			// create
+		},
+		dispChess:function(){},
+		dispChessAll:function(){},
+		chooseChess:function(){},
+		moveChess:function(){},
+		dispSkill:function(){},
+		dispSkillAll:function(){},
+		chooseSkill:function(){},
+		chooseSkillTarget:function(){},
+		dispEffect:function(){},
+		dispRound:function(){}
+
+	};
+	
+
+	// render helper END 	---
+
+	$scope.getRoomInfo();
+
+}])
 
 .controller('ChatDetailCtrl', function($scope, $stateParams, Chats) {
 	$scope.chat = Chats.get($stateParams.chatId);
@@ -91,7 +143,6 @@ angular.module('starter.controllers', [])
 		karazhan.getMyUsername(token).success(function(data) {
 			console.log(data);
 			var isLogin = $scope.isLogin = data.flag;
-			if (isLogin) {}
 		});
 	};
 
@@ -100,6 +151,7 @@ angular.module('starter.controllers', [])
 			.success(function(data) {
 				$scope.isShowTip = !data.flag;
 				if (data.flag) {
+					localStorage.setItem('username',user.username);
 					localStorage.setItem('token', data.token);
 					$scope.getMyUsername();
 				}
@@ -120,7 +172,7 @@ angular.module('starter.controllers', [])
 	};
 
 	$scope.gotoRoomList = function() {
-		$location.path('#/tab/roomList');
+		$location.path('tab/roomList');
 	}
 
 	$scope.getMyUsername();

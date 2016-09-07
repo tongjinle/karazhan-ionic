@@ -49,7 +49,10 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 			}
 		})
 		.state('tab.game', {
-			url: '/game',
+			cache:false,
+			url: '/game/{roomId}',
+			// url: '/game/228',
+			// url: '/game',
 			views: {
 				'tab-game': {
 					templateUrl: 'templates/tab-game.html',
@@ -90,6 +93,6 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 	// });
 
 	// if none of the above states are matched, use this as the fallback
-	$urlRouterProvider.otherwise('/tab/roomList');
+	// $urlRouterProvider.otherwise('/tab/roomList');
 
 });

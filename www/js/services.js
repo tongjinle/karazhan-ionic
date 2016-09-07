@@ -45,6 +45,15 @@ angular.module('starter.services', [])
 						pageSize: pageSize
 					}
 				});
+			},
+			getRoomInfo:function(token,roomId){
+				return $http({
+					url:addr+'/user/getRoomInfo/'+roomId,
+					method:'GET',
+					params:{
+						token:token
+					}
+				});
 			}
 
 		};

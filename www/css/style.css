@@ -1,5 +1,18 @@
 /* Empty. Add your own CSS if you like */
 
-.tip{
+.user-login{
+
+}
+
+.user-login .tip{
 	color: red;
 }
+
+.room-list .turn{
+	color:steelblue;
+}
+
+.room-list .turn.is-turn{
+	color:red;
+}
+

@@ -1,10 +1,17 @@
-<ion-view view-title="Room List">
+<ion-view view-title="Room List" class="room-list">
   <ion-content class="padding">
     <ion-list>
-      <ion-item ng-repeat="room in roomList" class="item-icon-left">
-        <i class="icon" ng-class="statusDict[room.status]" title="{{room.status}}"> 
-          {{room.id}}
-        </i>
+      <ion-item ng-repeat="room in roomList" ng-click="enterRoom(room)">
+        <div class="item-icon-left">
+          <i class="icon" ng-class="statusDict[room.status]" title="{{room.status}}"> 
+          {{getTitle(room)}}
+          </i>
+        </div>
+
+        <div class="item-icon-right">
+          <i class="icon turn" ng-class="{'ion-ios-heart-outline':getRelation(room).isMine,'is-turn':getRelation(room).isTurn}"></i>
+        </div>
+        
       </ion-item>
     </ion-list>
    <!-- 

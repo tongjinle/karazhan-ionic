@@ -1,0 +1,23 @@
+$boxSize:.3rem;
+.game{
+	.chess-board{
+		color:green;
+		.chess{
+			width:$boxSize;
+			height:$boxSize;
+			&.chess-color{
+				&.chess-color-red{
+					background-color:red;
+				}
+			}
+
+			&.hp{
+				width: 50%;
+				height: 50%;
+				border-radius: 50%;
+				text-align: center;
+			}
+		}
+	}	
+
+}

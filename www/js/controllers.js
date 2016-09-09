@@ -1,14 +1,14 @@
 angular.module('starter.controllers', [])
 
-.controller('roomListCtrl', ['$scope', '$location', 'karazhan', function($scope, $location, karazhan) {
+.controller('roomListCtrl', ['$scope', '$location', 'karazhan', 'gameUtil', function($scope, $location, karazhan, gameUtil) {
 
 	$scope.roomList = [];
 
 	$scope.statusDict = {
-		'0':'ion-ios-plus',
-		'1':'ion-ios-cog-outline',
-		'2':'ion-ios-cog-outline',
-		'3':'ion-ios-checkmark'
+		'0': 'ion-ios-plus',
+		'1': 'ion-ios-cog-outline',
+		'2': 'ion-ios-cog-outline',
+		'3': 'ion-ios-checkmark'
 	};
 
 	$scope.statusTxtDict = {
@@ -35,29 +35,33 @@ angular.module('starter.controllers', [])
 			});
 	};
 
-	$scope.enterRoom = function(room){
-		$location.path('tab/game/'+room.id);
+	$scope.enterRoom = function(room) {
+		$location.path('tab/game/' + room.id);
 		// $location.path('tab/game');
 		// $location.path('tab/userLogin');
 	};
 
-	$scope.getTitle = function(room){
-		return room.playerList.map(function(n){return n.playerName;}).join(' VS ');
+	$scope.getTitle = function(room) {
+		return room.playerList.map(function(n) {
+			return n.playerName;
+		}).join(' VS ');
 	};
 
-	$scope.getRelation = function(room){
+	$scope.getRelation = function(room) {
 		var username = localStorage.getItem('username');
-		if(!username){
+		if (!username) {
 			return {
-				isMine:false,
-				isTurn:false
+				isMine: false,
+				isTurn: false
 			};
 		}
 
-		var user = _.find(room.playerList,function(p){return p.playerName == username;});
+		var user = _.find(room.playerList, function(p) {
+			return p.playerName == username;
+		});
 		return {
-			isMine:!!user,
-			isTurn:user &&user.status ==3
+			isMine: !!user,
+			isTurn: user && user.status == 3
 		};
 	};
 
@@ -65,44 +69,54 @@ angular.module('starter.controllers', [])
 
 }])
 
-.controller('gameCtrl', ['$scope','$stateParams','karazhan',function($scope, $stateParams,karazhan) {
+.controller('gameCtrl', ['$scope', '$stateParams', 'karazhan', function($scope, $stateParams, karazhan) {
 	console.log($stateParams.roomId);
 
 	$scope.roomId = $stateParams.roomId;
+	$scope.room;
 
-	$scope.getRoomInfo = function(){
+	$scope.getRoomInfo = function() {
 		var token = localStorage.getItem('token');
 		var roomId = $scope.roomId;
 
-		karazhan.getRoomInfo(token,roomId)
-		.success(function(data){
-			if(!data.flag){
-				// 错误
-			}
+		karazhan.getRoomInfo(token, roomId)
+			.success(function(data) {
+				if (!data.flag) {
+					// 错误
+				}
 
-			console.log(data.info);
-		});
+				$scope.room = data.info;
+				console.log(data.info);
+			});
+	};
+
+	$scope.getTitle = function(room) {
+		return room ?
+			room.playerList.map(function(n) {
+				return n.playerName;
+			}).join(' VS ') :
+			'';
 	};
 
 	// render helper START 	---
 
 	var render = {
-		all:function(info){
+		all: function(info) {
 			// create
 		},
-		dispChess:function(){},
-		dispChessAll:function(){},
-		chooseChess:function(){},
-		moveChess:function(){},
-		dispSkill:function(){},
-		dispSkillAll:function(){},
-		chooseSkill:function(){},
-		chooseSkillTarget:function(){},
-		dispEffect:function(){},
-		dispRound:function(){}
+		dispChess: function() {},
+		dispChessAll: function() {},
+		chooseChess: function() {},
+		moveChess: function() {},
+		dispSkill: function() {},
+		dispSkillAll: function() {},
+		chooseSkill: function() {},
+		chooseSkillTarget: function() {},
+		dispEffect: function() {},
+		dispRound: function() {}
 
 	};
-	
+
 
 	// render helper END 	---
 
@@ -151,24 +165,24 @@ angular.module('starter.controllers', [])
 			.success(function(data) {
 				$scope.isShowTip = !data.flag;
 				if (data.flag) {
-					localStorage.setItem('username',user.username);
+					localStorage.setItem('username', user.username);
 					localStorage.setItem('token', data.token);
 					$scope.getMyUsername();
 				}
 			});
 	};
 
-	$scope.logout = function(){
+	$scope.logout = function() {
 		var token = localStorage.getItem('token');
-		if(!token){
+		if (!token) {
 			$scope.isLogin = true;
 			return;
 		}
 
 		karazhan.logout(token)
-		.success(function(data){
-			$scope.isLogin = !data.flag;
-		});
+			.success(function(data) {
+				$scope.isLogin = !data.flag;
+			});
 	};
 
 	$scope.gotoRoomList = function() {

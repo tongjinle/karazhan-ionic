@@ -1,0 +1,10 @@
+.room-list{ 
+	.turn{
+		color:steelblue;
+
+		&.is-turn{
+			color:red;
+		}
+
+	}
+}

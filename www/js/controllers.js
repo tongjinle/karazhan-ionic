@@ -65,6 +65,7 @@ angular.module('starter.controllers', [])
 		};
 	};
 
+
 	$scope.getRoomList();
 
 }])
@@ -86,6 +87,7 @@ angular.module('starter.controllers', [])
 				}
 
 				$scope.room = data.info;
+				$scope.$broadcast('room.change',$scope.room);
 				console.log(data.info);
 			});
 	};
@@ -142,7 +144,7 @@ angular.module('starter.controllers', [])
 	$scope.isShowTip = false;
 
 	var user = $scope.user = {
-		username: 'cat',
+		username: 'falcon',
 		password: ''
 	};
 

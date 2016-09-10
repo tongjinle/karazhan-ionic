@@ -1,21 +1,112 @@
-$boxSize:.3rem;
+@import "www/lib/ionic/scss/_variables.scss";
+
+$boxSize:.5rem;
 .game{
 	.chess-board{
 		color:green;
-		.chess{
-			width:$boxSize;
-			height:$boxSize;
-			&.chess-color{
-				&.chess-color-red{
-					background-color:red;
-				}
-			}
+		position: relative;
+		width: $boxSize * 8;
+		height: $boxSize * 8;
+		background: gray;
+		margin: 0 auto;
 
-			&.hp{
-				width: 50%;
-				height: 50%;
-				border-radius: 50%;
-				text-align: center;
+		@mixin layer($zIndex){
+			z-index: $zIndex;
+			position: absolute;
+			top:0;
+			left:0;
+		}
+
+		@mixin box{
+			width: $boxSize;
+			height: $boxSize;
+			position: absolute;
+		}
+
+		.basic-layer{
+			@include layer(100);
+
+			.basic-box{
+				@include box;
+
+				&.black{
+					background-color: black;
+				}
+				&.white{
+					background-color: white;
+				}
+
+
+			}
+		}
+
+		.tip-layer{
+			@include layer(200);
+
+			.tip-box{
+				@include box;
+				background-color: transparent;
+				opacity: .6;
+				&.move{
+					background-color: $balanced;
+				}
+
+				&.chess{
+					background-color:$balanced; 
+				}
+
+				&.target{
+					background-color: $energized;
+				}
+				
+			}
+		}
+
+		
+		
+
+		.chess-layer{
+			@include layer(300)
+			.chess{
+				@include box;
+				&.chess-color{
+					&.chess-color-red{
+						background-color:red;
+					}
+
+					&.chess-color-black{
+						background-color: black;
+					}
+				}
+				&.chess-type{
+					background-size: $boxSize $boxSize;
+					&.footman{
+						background-image: url('../img/chessType/footman.png');
+					}
+					&.knight{
+						background-image: url('../img/chessType/knight.png');
+					}
+					&.cavalry{
+						background-image: url('../img/chessType/cavalry.png');
+					}
+					&.minister{
+						background-image: url('../img/chessType/minister.png');
+					}
+					&.magic{
+						background-image: url('../img/chessType/magic.png');
+					}
+					&.king{
+						background-image: url('../img/chessType/king.png');
+					}
+				}
+				
+
+				.hp{
+					width: 50%;
+					height: 50%;
+					border-radius: 50%;
+					text-align: center;
+				}
 			}
 		}
 	}	

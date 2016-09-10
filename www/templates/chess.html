@@ -1,3 +1,5 @@
-<div class="chess" ng-class="">
+<div class="chess chess-type" ng-class="chessTypeDict[ch.type]"  ng-style="{left:ch.posi.x*boxSize+'px',top:ch.posi.y*boxSize+'px'}" >
+
 	<div class="hp">{{hp}}</div>
+	
 </div>

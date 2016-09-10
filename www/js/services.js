@@ -54,7 +54,19 @@ angular.module('starter.services', [])
 						token:token
 					}
 				});
+			},
+			getActiveChessList:function(token,roomId){
+				return $http({
+					url:addr+'/user/getActiveChessList',
+					method:'GET',
+					params:{
+						token:token ,
+						roomId:roomId
+					}
+				});
 			}
+			
+
 
 		};
 	}])

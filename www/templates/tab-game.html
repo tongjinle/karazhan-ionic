@@ -11,20 +11,18 @@
           Delete
         </ion-option-button>
       </ion-item> -->
-      <div class="item">
+      <!-- <div class="item">
         <h2 class="title"></h2>
-      </div>
-      <div class="bar bar-header" ng-class="getRelation(room)">
+      </div> -->
+      <div class="item bar bar-header" ng-class="getRelation(room)">
         <h1 class="title">
           {{getTitle(room)}}
         </h1>
       </div>
       <div class="item chess-board">
-        <!-- chess -->
-        <chess ng-repeat="ch in room.chessList">
-        </chess>
-        <!-- tip box -->
-        <!--  -->
+        <chess-board room="room">
+        </chess-board>
+        
       </div>
       <div class="skillBar">
         <!-- <skill ng-repeat="ch in room.skillList"> -->

@@ -109,6 +109,16 @@ $boxSize:.5rem;
 				}
 			}
 		}
+
+
+		.choose-layer{
+			@include layer(400);
+			.choose-box{
+				@include box;
+				opacity: 0.3;
+				background-color: blue;
+			}
+		}
 	}	
 
 }

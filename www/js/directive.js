@@ -53,14 +53,92 @@ angular
 					}
 				};
 
+				// create choose layer
+				var createChooseLayey = function(){
+					var choosePosiList = scope.choosePosiList = [];
+					for (var i = 0; i < scope.room.width; i++) {
+						for (var j = 0; j < scope.room.height; j++) {
+							choosePosiList.push({x:i,y:j});
+						}
+					}
+				};
+
 				var showTip = function(){
 					var cls = scope.tipType ;
 					var layer = elem.find('.tip-layer');
 
-					layer.find('.tip-box').remove('chess','move','target');
+					layer.find('.tip-box').removeClass('chess move target');
 					scope.tipPosiList.forEach(function(n,i){
 						layer.find('.tip-box[tid="'+[n.x,n.y].join('-')+'"]').addClass(cls);
 					});
+				};
+
+
+				// touch 管理器
+				var touchManager = function(posi){
+					var status = getStatus(myInfo.username,room);
+					var isInTip = isInTipPosiList();
+
+
+					// 尚未选择棋子
+					if(status == '2.0'){
+						if(isInTip){
+							act.chooseChess(posi);
+						}
+					}
+					// 已经选择了棋子
+					else if(status == '2.1'){
+						if(isInTip){
+							act.moveChess(posi);
+						}else{
+							act.unChooseChess();
+						}
+					}
+
+
+					// 是否在提示的格子里
+					function isInTipPosiList(){
+						return !!_.find(scope.tipPosiList,function(po){
+							return po.x == posi.x && po.y == posi.y;
+						});
+					}
+				};
+
+				// 玩家
+				var act = {
+					// 选择棋子
+					"chooseChess":function(posi){
+						var roomId = room.id;
+
+						karazhan.chooseChess(token,roomId,posi)
+						.success(function(data){
+							if(data.flag){
+								var ch = _.find(room.chessList,function(ch){return ch.posi.x == posi.x && ch.posi.y == posi.y;});
+								room.currChessId = ch.id;
+								ch.status = 1;
+
+
+								myInfo.status = getStatus(myInfo.username,room);
+								statusMachineDict[myInfo.status]();
+							}
+						});
+					},
+					// 反选棋子
+					"unChooseChess":function(){
+						var roomId = room.id;
+						
+						karazhan.unChooseChess(token,roomId)
+						.success(function(data){
+							if(data.flag){
+								var ch = _.find(room.chessList,function(ch){return room.currChessId == ch.id;});
+								ch.status = 0;
+								room.currChessId = null;
+
+								myInfo.status = getStatus(myInfo.username,room);
+								statusMachineDict[myInfo.status]();
+							}
+						});
+					}
 				};
 
 				var afterInitRoom = function() {
@@ -71,7 +149,7 @@ angular
 
 					console.log(myInfo);
 
-					statusMachineDict[myInfo.status]();
+					statusMachineDict[myInfo.status] && statusMachineDict[myInfo.status]();
 				};
 
 
@@ -91,8 +169,7 @@ angular
 					// 2.x 表示都是我的回合
 					// 还没有选择棋子
 					'2.0': function(){
-						var token = localStorage.getItem('token');
-						karazhan.getActiveChessList(token,scope.room.id)
+						karazhan.getActiveChessList(token,room.id)
 						.success(function(data){
 							console.log(data);
 							var chessIdList = data.chessIdList;
@@ -103,11 +180,17 @@ angular
 						})
 					},
 					// 棋子还没有移动
-					'2.1': 'beforeMove',
+					'2.1':function(){
+						karazhan.getMoveRange(token,room.id)
+						.success(function(data){
+							scope.tipType = 'move';
+							scope.tipPosiList = data.positionList;
+						});
+					},
 					// 还没有选择技能
-					'2.2': 'beforeChooseSkill',
+					'2.2':null,
 					// 还没有选择技能的目标
-					'2.3': 'beforeChooseSkillTarget',
+					'2.3':null,
 
 					// server给的status
 					// beforeStart,
@@ -189,6 +272,7 @@ angular
 
 						createBasicLayer();
 						createTipLayer();
+						createChooseLayey();
 
 						// after init room
 						afterInitRoom();
@@ -201,6 +285,11 @@ angular
 						showTip();
 					}
 					
+				});
+
+
+				scope.$on('chooseBox.touch',function(e,data){
+					touchManager({x:data.x,y:data.y});
 				});
 
 			}
@@ -218,6 +307,24 @@ angular
 
 			}
 		};
+	}])
+	.directive('chooseBox',[function(){
+		return {
+			restrict: 'E',
+			templateUrl: '/templates/chooseBox.html',
+			replace: true,
+			link: function(scope, elem, attrs) {
+				// console.log(scope.ch);
+				scope.boxSize = 50;
+
+				scope.touch = function(){
+					scope.$emit('chooseBox.touch',scope.posi);
+				}
+
+
+			}
+		};
+
 	}])
 	.directive('chess', [function() {
 		return {

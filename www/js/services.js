@@ -14,12 +14,12 @@ angular.module('starter.services', [])
 					}
 				});
 			},
-			logout:function(token){
+			logout: function(token) {
 				return $http({
-					url:addr+'/logout',
-					method:'POST',
-					data:{
-						token:token
+					url: addr + '/logout',
+					method: 'POST',
+					data: {
+						token: token
 					}
 				});
 			},
@@ -33,44 +33,75 @@ angular.module('starter.services', [])
 				});
 			},
 
-			getRoomList: function(token, isMine,status, pageIndex, pageSize) {
+			getRoomList: function(token, isMine, status, pageIndex, pageSize) {
 				return $http({
 					url: addr + '/user/roomList',
 					method: 'GET',
 					params: {
 						token: token,
 						isMine: isMine,
-						status:status,
+						status: status,
 						pageIndex: pageIndex,
 						pageSize: pageSize
 					}
 				});
 			},
-			getRoomInfo:function(token,roomId){
+			getRoomInfo: function(token, roomId) {
 				return $http({
-					url:addr+'/user/getRoomInfo/'+roomId,
-					method:'GET',
-					params:{
-						token:token
+					url: addr + '/user/getRoomInfo/' + roomId,
+					method: 'GET',
+					params: {
+						token: token
 					}
 				});
 			},
-			getActiveChessList:function(token,roomId){
+			getActiveChessList: function(token, roomId) {
 				return $http({
-					url:addr+'/user/getActiveChessList',
-					method:'GET',
-					params:{
-						token:token ,
-						roomId:roomId
+					url: addr + '/user/getActiveChessList',
+					method: 'GET',
+					params: {
+						token: token,
+						roomId: roomId
+					}
+				});
+			},
+			chooseChess: function(token, roomId, position) {
+				return $http({
+					url: addr + '/user/chooseChess',
+					method: 'POST',
+					data: {
+						token: token,
+						roomId: roomId,
+						position: position
+					}
+				});
+			},
+			unChooseChess: function(token, roomId) {
+				return $http({
+					url: addr + '/user/unChooseChess',
+					method: 'POST',
+					data: {
+						token: token,
+						roomId: roomId
+					}
+				});
+			},
+			getMoveRange: function(token, roomId) {
+				return $http({
+					url: addr + '/user/getMoveRange',
+					method: 'GET',
+					params: {
+						token: token,
+						roomId: roomId
 					}
 				});
 			}
-			
+
 
 
 		};
 	}])
 
 .factory('gameUtil', function() {
-	return{};
+	return {};
 });

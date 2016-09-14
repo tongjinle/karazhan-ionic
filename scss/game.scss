@@ -6,8 +6,7 @@ $boxSize:.5rem;
 		color:green;
 		position: relative;
 		width: $boxSize * 8;
-		height: $boxSize * 8;
-		background: gray;
+		height: $boxSize * 10;
 		margin: 0 auto;
 
 		@mixin layer($zIndex){
@@ -35,7 +34,6 @@ $boxSize:.5rem;
 				&.white{
 					background-color: white;
 				}
-
 
 			}
 		}
@@ -119,6 +117,63 @@ $boxSize:.5rem;
 				background-color: blue;
 			}
 		}
-	}	
 
+		.skill-layer{
+			position: absolute;
+			bottom: .1rem;
+			display: flex;
+			.skill{
+				$skillBoxSize:.6rem;
+				background-size: $skillBoxSize $skillBoxSize;
+				margin-right: .1rem;
+				border: 1px solid gray;
+				border-radius: .05rem;
+				width: $skillBoxSize;
+				height: $skillBoxSize;
+
+
+
+				&.active{
+					background-color: $balanced;
+					border-color: steelblue;
+					&.selected{
+						background-color: $energized;
+						border-color: red;
+						
+					}
+				}
+				&.passive{
+					background-color: olive;
+					opacity: .5;
+				}
+
+				&.attack{
+					background-image: url('../img/skillType/attack.png');
+				};
+				&.storm{
+					background-image: url('../img/skillType/storm.png');
+				};
+				&.crash{
+					background-image: url('../img/skillType/crash.png');
+				};
+				&.heal{
+					background-image: url('../img/skillType/heal.png');
+				};
+				&.purge{
+					background-image: url('../img/skillType/purge.png');
+				};
+				&.fire{
+					background-image: url('../img/skillType/fire.png');
+				};
+				&.nova{
+					background-image: url('../img/skillType/nova.png');
+				};
+				&.cleave{
+					background-image: url('../img/skillType/cleave.png');
+
+				}
+			}
+		}
+	}	
+	
 }

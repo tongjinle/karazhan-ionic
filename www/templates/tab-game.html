@@ -1,32 +1,29 @@
 <ion-view view-title="Game" class="game">
-  <ion-content>
-    <ion-list>
-      <!-- <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="chat in chats" type="item-text-wrap" href="#/tab/chats/{{chat.id}}">
-        <img ng-src="{{chat.face}}">
-        <h2>{{chat.name}}</h2>
-        <p>{{chat.lastText}}</p>
-        <i class="icon ion-chevron-right icon-accessory"></i>
+	<ion-content>
+		<ion-list>
+			<!-- <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="chat in chats" type="item-text-wrap" href="#/tab/chats/{{chat.id}}">
+				<img ng-src="{{chat.face}}">
+				<h2>{{chat.name}}</h2>
+				<p>{{chat.lastText}}</p>
+				<i class="icon ion-chevron-right icon-accessory"></i>
 
-        <ion-option-button class="button-assertive" ng-click="remove(chat)">
-          Delete
-        </ion-option-button>
-      </ion-item> -->
-      <!-- <div class="item">
-        <h2 class="title"></h2>
-      </div> -->
-      <div class="item bar bar-header" ng-class="getRelation(room)">
-        <h1 class="title">
-          {{getTitle(room)}}
-        </h1>
-      </div>
-      <div class="item chess-board">
-        <chess-board room="room">
-        </chess-board>
-        
-      </div>
-      <div class="skillBar">
-        <!-- <skill ng-repeat="ch in room.skillList"> -->
-      </div>
-    </ion-list>
-  </ion-content>
+				<ion-option-button class="button-assertive" ng-click="remove(chat)">
+					Delete
+				</ion-option-button>
+			</ion-item> -->
+			<!-- <div class="item">
+				<h2 class="title"></h2>
+			</div> -->
+			<div class="item bar bar-header" ng-class="getRelation(room)">
+				<h1 class="title">
+					{{getTitle(room)}}
+				</h1>
+			</div>
+			<div class="item chess-board">
+				<chess-board room="room">
+				</chess-board>
+				
+			</div>
+		</ion-list>
+	</ion-content>
 </ion-view>

@@ -95,6 +95,69 @@ angular.module('starter.services', [])
 						roomId: roomId
 					}
 				});
+			},
+			moveChess:function(token,roomId,posi){
+				return $http({
+					url:addr+'/user/moveChess',
+					method:'POST',
+					data:{
+						token:token,
+						roomId:roomId,
+						position:posi
+					}
+				});
+			},
+			getActiveSkillList:function(token,roomId){
+				return $http({
+					url:addr+'/user/getActiveSkillList',
+					method:'GET',
+					params: {
+						token: token,
+						roomId: roomId
+					}
+				});
+			},
+			chooseSkill:function(token,roomId,skillId){
+				return $http({
+					url:addr+'/user/chooseSkill',
+					method:'POST',
+					data:{
+						token:token,
+						roomId:roomId,
+						skillId:skillId
+					}
+				});
+			},
+			unChooseSkill:function(token,roomId){
+				return $http({
+					url:addr+'/user/unChooseSkill',
+					method:'POST',
+					data:{
+						token:token,
+						roomId:roomId
+					}
+				});
+			},
+			getSkillTargetList:function(token,roomId){
+				return $http({
+					url:addr+'/user/getSkillTargetList',
+					method:'GET',
+					params:{
+						token:token,
+						roomId:roomId
+					}
+				});
+			},
+			chooseSkillTarget:function(token,roomId,posi){
+				return $http({
+					url:addr+'/user/chooseSkillTarget',
+					method:'POST',
+					data:{
+						token:token,
+						roomId:roomId,
+						position:posi
+					}
+				});
 			}
 
 

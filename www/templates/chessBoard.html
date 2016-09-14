@@ -1,20 +1,29 @@
 <div>
-	<!-- basic layer -->
-	<div class="basic-layer">
+	<div>
+		<!-- basic layer -->
+		<div class="basic-layer">
+			
+		</div>
+		<!-- tip layer -->
+		<div class="tip-layer">
+			
+		</div>
+		<!-- chess layer -->
+		<div class="chess-layer">
+			<chess ng-repeat="ch in room.chessList">
+			</chess>
+		</div>
+		<!-- choose layer -->
+		<div class="choose-layer">
+			<choose-box ng-repeat ="posi in choosePosiList">
+			</choose-box>
+		</div>
 		
 	</div>
-	<!-- tip layer -->
-	<div class="tip-layer">
+
+	<div class="skill-layer">
+		<skill ng-repeat ="sk in skillList" >
+		</skill>
+	</div>
 		
-	</div>
-	<!-- chess layer -->
-	<div class="chess-layer">
-		<chess ng-repeat="ch in room.chessList">
-		</chess>
-	</div>
-	<!-- choose layer -->
-	<div class="choose-layer">
-		<choose-box ng-repeat ="posi in choosePosiList">
-		</choose-box>
-	</div>
 </div>

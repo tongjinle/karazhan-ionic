@@ -6,7 +6,7 @@ angular
 			templateUrl: '/templates/chessBoard.html',
 			replace: true,
 			scope: {
-				room: "="
+				roomId: "="
 			},
 			link: function(scope, elem, attrs) {
 				var boxSize = 50;
@@ -54,7 +54,7 @@ angular
 				};
 
 				// create choose layer
-				var createChooseLayey = function() {
+				var createChooseLayer = function() {
 					var choosePosiList = scope.choosePosiList = [];
 					for (var i = 0; i < scope.room.width; i++) {
 						for (var j = 0; j < scope.room.height; j++) {
@@ -114,6 +114,7 @@ angular
 							return po.x == posi.x && po.y == posi.y;
 						});
 					}
+
 				};
 
 				// 玩家
@@ -125,6 +126,8 @@ angular
 						karazhan.chooseChess(token, roomId, posi)
 							.success(function(data) {
 								if (data.flag) {
+									refresh();
+									return;
 									var ch = _.find(room.chessList, function(ch) {
 										return ch.posi.x == posi.x && ch.posi.y == posi.y;
 									});
@@ -144,6 +147,9 @@ angular
 						karazhan.unChooseChess(token, roomId)
 							.success(function(data) {
 								if (data.flag) {
+
+									refresh();
+									return;
 									var ch = _.find(room.chessList, function(ch) {
 										return room.currChessId == ch.id;
 									});
@@ -217,22 +223,47 @@ angular
 					console.log('refresh');
 
 					token = localStorage.getItem('token');
-					var roomId = scope.room.id;
+					var roomId = scope.roomId;
 
 					karazhan.getRoomInfo(token, roomId)
 						.success(function(data) {
 							if (!data.flag) {
 								throw 'room not exist';
 							}
+
 							room = scope.room = data.info;
+							if(!isInit){
+								createBasicLayer();
+								createTipLayer();
+								createChooseLayer();
+								isInit = true;
+							}
+
+
+
 							var username = myInfo.username = localStorage.getItem('username');
 							myInfo.playerColor = getColor(username, room);
 							myInfo.status = getStatus(username, room);
+							
+							procChessList(room);
 
 							console.log('status', myInfo.status);
 							statusMachineDict[myInfo.status]();
 						})
 				};
+
+				var procChessList = function(room){
+					if(room.currChessId!=undefined){
+						_.find(room.chessList,function(ch){
+							if( ch.id == room.currChessId){
+								ch.isSelected = true;
+								return true;
+							}
+						})
+					}
+				};
+
+				var isInit = false;
 
 				var afterInitRoom = function() {
 					// myInfo
@@ -288,15 +319,15 @@ angular
 						karazhan.getActiveSkillList(token, room.id)
 							.success(function(data) {
 								scope.skillList = data.skillList;
-								
-								if(room.currSkillId!=undefined){
-									_.find(scope.skillList,function(sk){
-										if(sk.id == room.currSkillId){
-											sk.isSelected = true;
-											return true;
-										}
-									})
-								}
+
+								// if(room.currSkillId!=undefined){
+								// 	_.find(scope.skillList,function(sk){
+								// 		if(sk.id == room.currSkillId){
+								// 			sk.isSelected = true;
+								// 			return true;
+								// 		}
+								// 	})
+								// }
 								
 							});
 					},
@@ -401,18 +432,19 @@ angular
 
 
 
-				scope.$watch('room', function(nv) {
-					if (nv) {
-						room = nv;
+				// scope.$watch('room', function(nv) {
+				// 	if (nv) {
+				// 		room = nv;
 
-						createBasicLayer();
-						createTipLayer();
-						createChooseLayey();
+				// 		createBasicLayer();
+				// 		createTipLayer();
+				// 		createChooseLayer();
 
-						// after init room
-						afterInitRoom();
-					}
-				});
+				// 		// after init room
+				// 		afterInitRoom();
+				// 	}
+				// });
+
 
 				scope.$watch('tipPosiList', function(nv) {
 					if (nv) {
@@ -459,6 +491,8 @@ angular
 					act.chooseSkill(skIdSelected,hasUnChoose);
 				});
 
+				refresh();
+
 			}
 		}
 	}])
@@ -488,6 +522,7 @@ angular
 			replace: true,
 			link: function(scope, elem, attrs) {
 				// console.log(scope.ch);
+				let ch = scope.ch;
 
 				scope.boxSize = 50;
 
@@ -499,6 +534,11 @@ angular
 					'4': 'magic',
 					'5': 'king'
 				};
+
+				scope.chessColor = ch.isSelected ? 'chess-color-selected'
+				: ch.color == 0 ? 'chess-color-red'
+				: ch.color == 1 ? 'chess-color-black'
+				: '';
 
 			}
 		};

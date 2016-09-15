@@ -73,9 +73,11 @@ $boxSize:.5rem;
 					&.chess-color-red{
 						background-color:red;
 					}
-
 					&.chess-color-black{
 						background-color: steelblue;
+					}
+					&.chess-color-selected{
+						background-color: orange;
 					}
 				}
 				&.chess-type{
@@ -101,11 +103,24 @@ $boxSize:.5rem;
 				}
 				
 
-				.hp{
+				.hp,.maxhp{
 					width: 50%;
 					height: 50%;
 					border-radius: 50%;
+					border: 1px solid black;
+					color: white;
+					background-color: darkgreen;
 					text-align: center;
+					position: absolute;
+					right: 1%;
+				}
+
+				.hp{
+					top:5%;
+
+				}
+				.maxhp{
+					bottom:5%;
 				}
 			}
 		}

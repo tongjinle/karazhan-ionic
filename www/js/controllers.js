@@ -100,42 +100,11 @@ angular.module('starter.controllers', [])
 			'';
 	};
 
-	// render helper START 	---
+	
 
-	var render = {
-		all: function(info) {
-			// create
-		},
-		dispChess: function() {},
-		dispChessAll: function() {},
-		chooseChess: function() {},
-		moveChess: function() {},
-		dispSkill: function() {},
-		dispSkillAll: function() {},
-		chooseSkill: function() {},
-		chooseSkillTarget: function() {},
-		dispEffect: function() {},
-		dispRound: function() {}
-
-	};
-
-
-	// render helper END 	---
-
-	$scope.getRoomInfo();
+	// $scope.getRoomInfo();
 
 }])
-
-.controller('ChatDetailCtrl', function($scope, $stateParams, Chats) {
-	$scope.chat = Chats.get($stateParams.chatId);
-})
-
-
-.controller('AccountCtrl', function($scope) {
-	$scope.settings = {
-		enableFriends: true
-	};
-})
 
 .controller('userLoginCtrl', ['$scope', '$location', 'karazhan', function($scope, $location, karazhan) {
 	// 是否已经登录

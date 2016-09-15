@@ -44,7 +44,7 @@ $boxSize:.5rem;
 			.tip-box{
 				@include box;
 				background-color: transparent;
-				opacity: .6;
+				// opacity: .6;
 				&.move{
 					background-color: $balanced;
 				}
@@ -67,13 +67,15 @@ $boxSize:.5rem;
 			@include layer(300)
 			.chess{
 				@include box;
+				border-radius: .15rem;
+				border: 1px solid white;
 				&.chess-color{
 					&.chess-color-red{
 						background-color:red;
 					}
 
 					&.chess-color-black{
-						background-color: black;
+						background-color: steelblue;
 					}
 				}
 				&.chess-type{

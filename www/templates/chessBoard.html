@@ -1,5 +1,25 @@
 <div>
-	<div>
+	<div class="chess-board-round">
+		<div class="player player-red" ng-class="{'player-turn':red.status == 3}">
+			<img class="logo" src="img/logo/red.png"></img>
+			<span class="text">
+				{{red.playerName}}
+			</span>
+		</div>
+		<div class="round">
+			<div class="text">
+				{{room.roundIndex}}
+			</div>
+		</div>
+		<div class="player player-black" ng-class="{'player-turn':black.status == 3}">
+			<img class="logo" src="img/logo/black.png"></img>
+			<span class="text">
+				{{black.playerName}}
+			</span>
+		</div>
+
+	</div>
+	<div class="chess-board-main">
 		<!-- basic layer -->
 		<div class="basic-layer">
 			

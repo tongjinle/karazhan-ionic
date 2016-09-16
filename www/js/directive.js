@@ -71,7 +71,7 @@ angular
 					var layer = elem.find('.tip-layer');
 
 					layer.find('.tip-box').removeClass('chess move target');
-					scope.tipPosiList.forEach(function(n, i) {
+					scope.tipPosiList && scope.tipPosiList.forEach(function(n, i) {
 						layer.find('.tip-box[tid="' + [n.x, n.y].join('-') + '"]').addClass(cls);
 					});
 				};
@@ -244,7 +244,11 @@ angular
 							var username = myInfo.username = localStorage.getItem('username');
 							myInfo.playerColor = getColor(username, room);
 							myInfo.status = getStatus(username, room);
+
+							scope.tipPosiList && (scope.tipPosiList.length =0);
+							showTip();
 							
+							procRound(room);
 							procChessList(room);
 
 							console.log('status', myInfo.status);
@@ -263,10 +267,24 @@ angular
 					}
 				};
 
+				var procRound = function(room){
+					var playerList = room.playerList;
+					var redPlayer = _.find(playerList,function(p){return p.playerColor == 0;});
+					if(redPlayer){
+						scope.red={status:redPlayer.status,playerName:redPlayer.playerName};
+					}
+					var blackPlayer = _.find(playerList,function(p){return p.playerColor ==1;});
+					if(blackPlayer){
+						scope.black = {status:blackPlayer.status,playerName:blackPlayer.playerName};
+					}
+
+				};
+
 				var isInit = false;
 
 				var afterInitRoom = function() {
 					// myInfo
+					console.log('afterInitRoom');
 					var room = scope.room;
 					myInfo.playerColor = getColor(myInfo.username, room);
 					myInfo.status = getStatus(myInfo.username, room);

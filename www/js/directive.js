@@ -292,11 +292,11 @@ angular
 					var playerList = room.playerList;
 					var redPlayer = _.find(playerList,function(p){return p.playerColor == 0;});
 					if(redPlayer){
-						scope.red={status:redPlayer.status,playerName:redPlayer.playerName};
+						scope.red={status:redPlayer.status,playerName:redPlayer.playerName,energy:redPlayer.energy};
 					}
 					var blackPlayer = _.find(playerList,function(p){return p.playerColor ==1;});
 					if(blackPlayer){
-						scope.black = {status:blackPlayer.status,playerName:blackPlayer.playerName};
+						scope.black = {status:blackPlayer.status,playerName:blackPlayer.playerName,energy:blackPlayer.energy};
 					}
 
 				};

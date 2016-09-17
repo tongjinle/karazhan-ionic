@@ -49,6 +49,16 @@ $boxSize:.5rem;
 				    color: steelblue;
 				    font-weight: 700;
 				}
+				.energy{
+					display: inline-block;
+					width: .2rem;
+					height: .2rem;
+					color: white;
+					vertical-align: middle;
+					line-height: .2rem;
+					background-color: blue;
+					
+				}
 
 				&.player-red{
 					flex:2;

@@ -9,7 +9,9 @@ angular
 				roomId: "="
 			},
 			link: function(scope, elem, attrs) {
-				var boxSize = 50;
+				// 单位rem
+				scope.roundLayerHeight = .6;
+				var boxSize = scope.boxSize = .5;
 				var room;
 				var token = localStorage.getItem('token');
 
@@ -21,8 +23,8 @@ angular
 						for (var j = 0; j < scope.room.height; j++) {
 							var node = $('<div/>')
 								.css({
-									left: boxSize * i,
-									top: boxSize * j
+									left: boxSize * i +'rem',
+									top: boxSize * j +'rem'
 								})
 								.addClass('basic-box')
 								.addClass((i + j) % 2 ? 'white' : 'black');
@@ -43,8 +45,8 @@ angular
 							var node = $('<div/>')
 								.attr('tid', [i, j].join('-'))
 								.css({
-									left: boxSize * i,
-									top: boxSize * j
+									left: boxSize * i +'rem',
+									top: boxSize * j +'rem'
 								})
 								.addClass('tip-box');
 
@@ -172,8 +174,12 @@ angular
 
 									// myInfo.status = getStatus(myInfo.username,room);
 									// statusMachineDict[myInfo.status]();
-
-									refresh();
+									animate('move',{
+										chessId:room.currChessId,
+										position:posi
+									},function(){
+										refresh();
+									});
 								}
 							});
 					},
@@ -215,8 +221,23 @@ angular
 					}	
 				};
 
-				var animate = function(){
+				var animate = function(method,option,cb){
+					var dict = {};
+					dict['move'] = function(option){
+						var chessId = option.chessId;
+						var position = option.position;
 
+						var ch = _.find(room.chessList,function(ch){return ch.id == chessId;});
+
+						var chBox = $('[chid="'+chessId+'"]');
+						var dist = Math.abs(ch.posi.x-position.x) + Math.abs(ch.posi.y-position.y);
+						chBox.animate({
+							left:position.x*boxSize+'rem',
+							top:position.y*boxSize+'rem'
+						},dist*500,cb); 
+					}
+
+					dict[method](option);
 				};
 
 				var refresh = function() {
@@ -522,11 +543,11 @@ angular
 			replace: true,
 			link: function(scope, elem, attrs) {
 				// console.log(scope.ch);
-				scope.boxSize = 50;
+				scope.boxSize = .5;
 
 				scope.touch = function() {
 					scope.$emit('chooseBox.touch', scope.posi);
-				}
+				};
 
 
 			}
@@ -542,7 +563,7 @@ angular
 				// console.log(scope.ch);
 				let ch = scope.ch;
 
-				scope.boxSize = 50;
+				scope.boxSize = .5;
 
 				scope.chessTypeDict = {
 					'0': 'footman',

@@ -57,7 +57,7 @@ $boxSize:.5rem;
 					vertical-align: middle;
 					line-height: .2rem;
 					background-color: blue;
-					
+
 				}
 
 				&.player-red{
@@ -231,7 +231,8 @@ $boxSize:.5rem;
 		}	
 		.skill-layer{
 			position: absolute;
-			display: flex;
+			padding-top: .1rem;
+			width: 100%;
 			.skill{
 				$skillBoxSize:.6rem;
 				background-size: $skillBoxSize $skillBoxSize;
@@ -240,7 +241,7 @@ $boxSize:.5rem;
 				border-radius: .05rem;
 				width: $skillBoxSize;
 				height: $skillBoxSize;
-
+				float: left;
 
 
 				&.active{
@@ -282,6 +283,18 @@ $boxSize:.5rem;
 					background-image: url('../img/skillType/cleave.png');
 
 				}
+			}
+
+
+			.rest{
+				float: right;
+				width:.6rem;
+				height: .6rem;
+				background-color: steelblue;
+				line-height: .6rem;
+				border-radius: 50% 50%;
+				text-align: center;
+				font-size: 22px;
 			}
 		}
 	}

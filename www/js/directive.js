@@ -218,7 +218,21 @@ angular
 								console.log(data.changes);
 							}
 						});
+					},
+					'rest':function(){
+						karazhan.rest(token,room.id)
+						.success(function(data){
+							if(data.flag){
+								
+								refresh();
+							}
+						});
 					}	
+				};
+
+
+				scope.rest = function(){
+					act['rest']();
 				};
 
 				var animate = function(method,option,cb){
@@ -407,7 +421,7 @@ angular
 
 					// 已经结束
 					'3': null
-				}
+				};
 
 				var getStatus = function(playerName, room) {
 					// 如果游戏尚未开始,或者已经结束

@@ -50,7 +50,7 @@
 	<div ng-show="myInfo.username == room.currPlayerName" class="skill-layer" ng-style="{'top':room.height*boxSize + roundLayerHeight +'rem'}">
 		<skill ng-repeat ="sk in skillList" >
 		</skill>
-		<div class="rest">Rest</div>
+		<div class="rest" ng-click="rest()">Rest</div>
 	</div>
 
 </div>

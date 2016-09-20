@@ -158,6 +158,16 @@ angular.module('starter.services', [])
 						position:posi
 					}
 				});
+			},
+			rest:function(token,roomId){
+				return $http({
+					url:addr+'/user/rest',
+					method:'POST',
+					data:{
+						token:token,
+						roomId:roomId
+					}
+				});
 			}
 
 

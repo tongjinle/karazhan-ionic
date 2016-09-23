@@ -130,15 +130,15 @@ angular
 								if (data.flag) {
 									refresh();
 									return;
-									var ch = _.find(room.chessList, function(ch) {
-										return ch.posi.x == posi.x && ch.posi.y == posi.y;
-									});
-									room.currChessId = ch.id;
-									ch.status = 1;
+									// var ch = _.find(room.chessList, function(ch) {
+									// 	return ch.posi.x == posi.x && ch.posi.y == posi.y;
+									// });
+									// room.currChessId = ch.id;
+									// ch.status = 1;
 
 
-									myInfo.status = getStatus(myInfo.username, room);
-									statusMachineDict[myInfo.status]();
+									// myInfo.status = getStatus(myInfo.username, room);
+									// statusMachineDict[myInfo.status]();
 								}
 							});
 					},
@@ -466,22 +466,17 @@ angular
 								scope.tipType = 'move';
 								scope.tipPosiList = data.positionList;
 							});
+
+						karazhan.getActiveSkillList(token, room.id)
+							.success(function(data) {
+								scope.skillList = data.skillList;
+							});
 					},
 					// 还没有选择技能
 					'2.2': function() {
 						karazhan.getActiveSkillList(token, room.id)
 							.success(function(data) {
 								scope.skillList = data.skillList;
-
-								// if(room.currSkillId!=undefined){
-								// 	_.find(scope.skillList,function(sk){
-								// 		if(sk.id == room.currSkillId){
-								// 			sk.isSelected = true;
-								// 			return true;
-								// 		}
-								// 	})
-								// }
-
 							});
 					},
 					// 还没有选择技能的目标

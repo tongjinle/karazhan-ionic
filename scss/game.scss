@@ -6,7 +6,7 @@ $boxSize:.5rem;
 		color:green;
 		position: relative;
 		width: $boxSize * 8;
-		height: $boxSize * 10;
+		height: $boxSize * 12;
 		margin: 0 auto;
 
 		@mixin layer($zIndex){
@@ -306,6 +306,17 @@ $boxSize:.5rem;
 				font-size: 22px;
 				color: white;
 			}
+		}
+
+		.chessDesc{
+			position: absolute;
+			bottom: .45rem;
+			color: steelblue;
+		}
+
+		.skillDesc{
+			position: absolute;
+			bottom: .1rem;
 		}
 	}
 	

@@ -2,7 +2,6 @@ angular.module('starter.services', [])
 	.factory('karazhan', ['$http', function($http) {
 		var addr = 'http://localhost:3000';
 
-
 		return {
 			login: function(username, password) {
 				return $http({
@@ -175,6 +174,34 @@ angular.module('starter.services', [])
 		};
 	}])
 
-.factory('gameUtil', function() {
-	return {};
+.factory('karazhanDesc', function() {
+	var chessDesc = [
+		'步兵,4血量,移动范围周围1格,能量消耗1',
+		'骑士,10血量,移动范围周围1格,能量消耗2',
+		'骑兵,12血量,移动范围马步,能量消耗1',
+		'牧师,8血量,移动范围周围1格,能量消耗3',
+		'法师,8血量,移动范围直线4格或者斜线3格,能量消耗4',
+		'国王,18血量,移动范围周围1格,能量消耗3'
+	];
+
+	var skillDesc = [
+		'对单个敌人造成1点伤害',
+		'对周围一圈敌人造成3点伤害',
+		'对单个敌人造成3点伤害',
+		'对单个友军回复6点血量,施法距离为直线4格',
+		'净化,对正面三格内所有目标造成2点伤害',
+		'火球,对单个目标造成8点伤害,施法距离为near*4 + slash*3',
+		'冰霜新星,对周围2格所有敌人造成6点伤害',
+		'顺势斩,对目标平行三格敌人造成6点伤害'
+	];
+
+	return {
+		getChessDesc:function(type){
+			return chessDesc[type];
+		},
+		getSkillDesc:function(type){
+			return skillDesc[type];
+		}
+	};
 });
+

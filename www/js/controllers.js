@@ -1,6 +1,6 @@
 angular.module('starter.controllers', [])
 
-.controller('roomListCtrl', ['$scope', '$location', 'karazhan', 'gameUtil', function($scope, $location, karazhan, gameUtil) {
+.controller('roomListCtrl', ['$scope', '$location', 'karazhan',  function($scope, $location, karazhan) {
 
 	$scope.roomList = [];
 

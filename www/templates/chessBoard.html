@@ -53,4 +53,13 @@
 		<div class="rest" ng-click="rest()">Rest</div>
 	</div>
 
+	<div class="chessDesc" ng-show="room.currChessId">
+		{{getChessDesc(room.currChessId)}},{{room.currChessId}}
+	</div>
+	<div class="skillDesc" ng-show="room.currChessId">
+		<div ng-repeat="sk in room.skillList">
+			{{getSkillDesc(sk.type)}}
+		</div>
+	</div>
+
 </div>

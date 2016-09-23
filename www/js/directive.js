@@ -1,6 +1,6 @@
 angular
 	.module('starter.directive', [])
-	.directive('chessBoard', ['karazhan', '$compile', function(karazhan, $compile) {
+	.directive('chessBoard', ['karazhan','karazhanDesc', '$compile', function(karazhan,karazhanDesc, $compile) {
 		return {
 			restrict: 'E',
 			templateUrl: '/templates/chessBoard.html',
@@ -78,6 +78,23 @@ angular
 					});
 				};
 
+				scope.getChessDesc = function(chessId){
+					if(!chessId || !room.chessList){
+						return '';
+					}
+					var ch = _.find(room.chessList,function(ch){
+						return ch.id == chessId;
+					});
+					return karazhanDesc.getChessDesc(ch.type);
+				};
+
+				scope.getSkillDesc = function(type){
+					if(!type){
+						return '';
+					}
+					return karazhanDesc.getSkillDesc(type);
+				};
+
 
 				// touch 管理器
 				var touchManager = function(posi) {
@@ -129,16 +146,6 @@ angular
 							.success(function(data) {
 								if (data.flag) {
 									refresh();
-									return;
-									// var ch = _.find(room.chessList, function(ch) {
-									// 	return ch.posi.x == posi.x && ch.posi.y == posi.y;
-									// });
-									// room.currChessId = ch.id;
-									// ch.status = 1;
-
-
-									// myInfo.status = getStatus(myInfo.username, room);
-									// statusMachineDict[myInfo.status]();
 								}
 							});
 					},
@@ -151,15 +158,7 @@ angular
 								if (data.flag) {
 
 									refresh();
-									return;
-									var ch = _.find(room.chessList, function(ch) {
-										return room.currChessId == ch.id;
-									});
-									ch.status = 0;
-									room.currChessId = null;
-
-									myInfo.status = getStatus(myInfo.username, room);
-									statusMachineDict[myInfo.status]();
+									
 								}
 							});
 					},
@@ -168,12 +167,6 @@ angular
 						karazhan.moveChess(token, room.id, posi)
 							.success(function(data) {
 								if (data.flag) {
-									// var ch = _.find(room.chessList,function(ch){return ch.id == room.currChessId;});
-									// ch.posi = posi;
-									// ch.status = data.status;
-
-									// myInfo.status = getStatus(myInfo.username,room);
-									// statusMachineDict[myInfo.status]();
 									animate('move', {
 										chessId: room.currChessId,
 										position: posi
@@ -344,6 +337,8 @@ angular
 
 					token = localStorage.getItem('token');
 					var roomId = scope.roomId;
+
+					scope.skillList = undefined;
 
 					karazhan.getRoomInfo(token, roomId)
 						.success(function(data) {

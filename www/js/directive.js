@@ -23,8 +23,8 @@ angular
 						for (var j = 0; j < scope.room.height; j++) {
 							var node = $('<div/>')
 								.css({
-									left: boxSize * i +'rem',
-									top: boxSize * j +'rem'
+									left: boxSize * i + 'rem',
+									top: boxSize * j + 'rem'
 								})
 								.addClass('basic-box')
 								.addClass((i + j) % 2 ? 'white' : 'black');
@@ -45,8 +45,8 @@ angular
 							var node = $('<div/>')
 								.attr('tid', [i, j].join('-'))
 								.css({
-									left: boxSize * i +'rem',
-									top: boxSize * j +'rem'
+									left: boxSize * i + 'rem',
+									top: boxSize * j + 'rem'
 								})
 								.addClass('tip-box');
 
@@ -100,10 +100,10 @@ angular
 						}
 					}
 					// 已经选择了技能
-					else if (status == '2.3'){
-						if(isInTip){
+					else if (status == '2.3') {
+						if (isInTip) {
 							act.chooseSkillTarget(posi);
-						}else{
+						} else {
 							act.unChooseSkill();
 						}
 					}
@@ -174,10 +174,10 @@ angular
 
 									// myInfo.status = getStatus(myInfo.username,room);
 									// statusMachineDict[myInfo.status]();
-									animate('move',{
-										chessId:room.currChessId,
-										position:posi
-									},function(){
+									animate('move', {
+										chessId: room.currChessId,
+										position: posi
+									}, function() {
 										refresh();
 									});
 								}
@@ -186,70 +186,134 @@ angular
 					// 选择技能
 					// hasUnChoose -> 是否有反选
 					"chooseSkill": function(skillId, hasUnChoose) {
-							var arr = [];
-							if (hasUnChoose) {
-								arr.push(function(cb) {
-									karazhan.unChooseSkill(token, room.id, skillId)
-										.success(function(data) {
-											cb(!data.flag);
-										});
-								})
-							}
+						var arr = [];
+						if (hasUnChoose) {
+							arr.push(function(cb) {
+								karazhan.unChooseSkill(token, room.id, skillId)
+									.success(function(data) {
+										cb(!data.flag);
+									});
+							})
+						}
 
-							if (skillId != null) {
-								arr.push(function(cb) {
-									karazhan.chooseSkill(token, room.id, skillId)
-										.success(function(data) {
-											cb(!data.flag);
-										});
-								});
-							}
-
-							async.series(arr,function(err) {
-								!err && refresh();
+						if (skillId != null) {
+							arr.push(function(cb) {
+								karazhan.chooseSkill(token, room.id, skillId)
+									.success(function(data) {
+										cb(!data.flag);
+									});
 							});
-						},
-						
-					// 选择技能目标(施放技能)
-					"chooseSkillTarget":function(posi){
-						karazhan.chooseSkillTarget(token,room.id,posi)
-						.success(function(data){
-							if(data.flag){
-								console.log(data.changes);
-							}
+						}
+
+						async.series(arr, function(err) {
+							!err && refresh();
 						});
 					},
-					'rest':function(){
-						karazhan.rest(token,room.id)
-						.success(function(data){
-							if(data.flag){
-								
-								refresh();
-							}
-						});
-					}	
+
+					// 选择技能目标(施放技能)
+					"chooseSkillTarget": function(posi) {
+						var currChessId = room.currChessId;
+						var currSkillId = room.currSkillId;
+						karazhan.chooseSkillTarget(token, room.id, posi)
+							.success(function(data) {
+								if (data.flag) {
+									console.log(data.changes);
+									var options = {
+										currChessId:currChessId,
+										currSkillId:currSkillId,
+										changes: data.changes
+									};
+									var arr = [];
+									_.each(data.changes,function(chg){
+										var fn;
+										if(chg.type == 1){
+											fn = function(cb){
+												animate('hurt',chg.detail,cb);
+											};
+										}else if(chg.type == 2){
+											fn = function(cb){
+												animate('heal',chg.detail,cb);
+											}
+										}
+										arr.push(fn);
+									});
+									async.series(arr,function(err,cb){
+										refresh();
+									});
+									
+								}
+							});
+					},
+					'rest': function() {
+						karazhan.rest(token, room.id)
+							.success(function(data) {
+								if (data.flag) {
+									refresh();
+								}
+							});
+					}
 				};
 
 
-				scope.rest = function(){
+				scope.rest = function() {
 					act['rest']();
 				};
 
-				var animate = function(method,option,cb){
+				var animate = function(method, option, cb) {
 					var dict = {};
-					dict['move'] = function(option){
+					dict['move'] = function(option) {
 						var chessId = option.chessId;
 						var position = option.position;
 
-						var ch = _.find(room.chessList,function(ch){return ch.id == chessId;});
+						var ch = _.find(room.chessList, function(ch) {
+							return ch.id == chessId;
+						});
 
-						var chBox = $('[chid="'+chessId+'"]');
-						var dist = Math.abs(ch.posi.x-position.x) + Math.abs(ch.posi.y-position.y);
+						var chBox = $('[chid="' + chessId + '"]');
+						var dist = Math.abs(ch.posi.x - position.x) + Math.abs(ch.posi.y - position.y);
 						chBox.animate({
-							left:position.x*boxSize+'rem',
-							top:position.y*boxSize+'rem'
-						},dist*500,cb); 
-					}
+							left: position.x * boxSize + 'rem',
+							top: position.y * boxSize + 'rem'
+						}, /*dist**/ 500, cb);
+					};
+
+					dict['hurt'] = function(option) {
+						var currChess = _.find(room.chessList,function(ch){return ch.id == option.sourceChessId;});
+						var tagetChess = _.find(room.chessList,function(ch){return ch.id == option.targetChessId;});
+
+						var box = $('[chid="'+tagetChess.id+'"]');
+						var orgiginLeft = box.css('left').replace('px','')/100;
+						var orgiginTop = box.css('top').replace('px','')/100;
+						box.addClass('inHurt');
+						var arr = [];
+						var count =4;
+						while(count--){
+							arr.push({
+								left:(Math.random>.5?1:-1)* Math.random()/8,
+								top:(Math.random>.5?1:-1)*Math.random()/8
+							});
+						};
+						async.each(arr,function(posi,cb){
+							box.animate({
+								left:posi.left+orgiginLeft+'rem',
+								top:posi.top+orgiginTop+'rem'
+							},200,function(){
+								box.css({
+									left:orgiginLeft+'rem',
+									top:orgiginTop+'rem'
+								});
+								box.removeClass('.inHurt');
+								cb();
+							});
+							
+						},function(err,data){
+							cb();
+						});
+					};
+
+					dict['heal'] = function(option) {
+
+					};
 
 					dict[method](option);
 				};
@@ -267,7 +331,10 @@ angular
 							}
 
 							room = scope.room = data.info;
-							if(!isInit){
+
+							console.log('refresh',room);
+
+							if (!isInit) {
 								createBasicLayer();
 								createTipLayer();
 								createChooseLayer();
@@ -280,9 +347,9 @@ angular
 							myInfo.playerColor = getColor(username, room);
 							myInfo.status = getStatus(username, room);
 
-							scope.tipPosiList && (scope.tipPosiList.length =0);
+							scope.tipPosiList && (scope.tipPosiList.length = 0);
 							showTip();
-							
+
 							procRound(room);
 							procChessList(room);
 
@@ -291,10 +358,10 @@ angular
 						})
 				};
 
-				var procChessList = function(room){
-					if(room.currChessId!=undefined){
-						_.find(room.chessList,function(ch){
-							if( ch.id == room.currChessId){
+				var procChessList = function(room) {
+					if (room.currChessId != undefined) {
+						_.find(room.chessList, function(ch) {
+							if (ch.id == room.currChessId) {
 								ch.isSelected = true;
 								return true;
 							}
@@ -302,15 +369,27 @@ angular
 					}
 				};
 
-				var procRound = function(room){
+				var procRound = function(room) {
 					var playerList = room.playerList;
-					var redPlayer = _.find(playerList,function(p){return p.playerColor == 0;});
-					if(redPlayer){
-						scope.red={status:redPlayer.status,playerName:redPlayer.playerName,energy:redPlayer.energy};
+					var redPlayer = _.find(playerList, function(p) {
+						return p.playerColor == 0;
+					});
+					if (redPlayer) {
+						scope.red = {
+							status: redPlayer.status,
+							playerName: redPlayer.playerName,
+							energy: redPlayer.energy
+						};
 					}
-					var blackPlayer = _.find(playerList,function(p){return p.playerColor ==1;});
-					if(blackPlayer){
-						scope.black = {status:blackPlayer.status,playerName:blackPlayer.playerName,energy:blackPlayer.energy};
+					var blackPlayer = _.find(playerList, function(p) {
+						return p.playerColor == 1;
+					});
+					if (blackPlayer) {
+						scope.black = {
+							status: blackPlayer.status,
+							playerName: blackPlayer.playerName,
+							energy: blackPlayer.energy
+						};
 					}
 
 				};
@@ -381,7 +460,7 @@ angular
 								// 		}
 								// 	})
 								// }
-								
+
 							});
 					},
 					// 还没有选择技能的目标
@@ -390,9 +469,9 @@ angular
 							.success(function(data) {
 								scope.skillList = data.skillList;
 
-								if(room.currSkillId!=undefined){
-									_.find(scope.skillList,function(sk){
-										if(sk.id == room.currSkillId){
+								if (room.currSkillId != undefined) {
+									_.find(scope.skillList, function(sk) {
+										if (sk.id == room.currSkillId) {
 											sk.isSelected = true;
 											return true;
 										}
@@ -408,7 +487,7 @@ angular
 								scope.tipPosiList = data.positionList;
 							});
 
-						
+
 					},
 
 					// server给的status
@@ -535,13 +614,13 @@ angular
 						return sk.id == skId;
 					});
 					sk.isSelected = !sk.isSelected;
-					if(!sk.isSelected){
+					if (!sk.isSelected) {
 						hasUnChoose = true;
-					}else{
+					} else {
 						skIdSelected = sk.id;
 					}
 
-					act.chooseSkill(skIdSelected,hasUnChoose);
+					act.chooseSkill(skIdSelected, hasUnChoose);
 				});
 
 				refresh();
@@ -588,10 +667,7 @@ angular
 					'5': 'king'
 				};
 
-				scope.chessColor = ch.isSelected ? 'chess-color-selected'
-				: ch.color == 0 ? 'chess-color-red'
-				: ch.color == 1 ? 'chess-color-black'
-				: '';
+				scope.chessColor = ch.isSelected ? 'chess-color-selected' : ch.color == 0 ? 'chess-color-red' : ch.color == 1 ? 'chess-color-black' : '';
 
 			}
 		};

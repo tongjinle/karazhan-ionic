@@ -194,6 +194,11 @@ $boxSize:.5rem;
 							background-image: url('../img/chessType/king.png');
 						}
 					}
+
+					&.inHurt{
+						background-color: red;
+						opacity: .3;
+					}
 					
 
 					.hp,.maxhp{

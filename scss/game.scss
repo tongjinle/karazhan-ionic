@@ -196,8 +196,12 @@ $boxSize:.5rem;
 					}
 
 					&.inHurt{
-						background-color: red;
-						opacity: .3;
+						border: 2px solid red;
+					}
+
+					&.inHeal{
+						border: 2px solid green;
+						
 					}
 					
 

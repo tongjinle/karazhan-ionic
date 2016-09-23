@@ -297,22 +297,43 @@ angular
 							box.animate({
 								left:posi.left+orgiginLeft+'rem',
 								top:posi.top+orgiginTop+'rem'
-							},200,function(){
-								box.css({
-									left:orgiginLeft+'rem',
-									top:orgiginTop+'rem'
-								});
-								box.removeClass('.inHurt');
-								cb();
-							});
+							},50,cb);
 							
 						},function(err,data){
+							box.css({
+								left:orgiginLeft+'rem',
+								top:orgiginTop+'rem'
+							});
+							box.removeClass('inHurt');
 							cb();
 						});
 					};
 
 					dict['heal'] = function(option) {
+						var tagetChess = _.find(room.chessList,function(ch){return ch.id == option.targetChessId;});
 
+						var box = $('[chid="'+tagetChess.id+'"]');
+						var orgiginTop = box.css('top').replace('px','')/100;
+						box.addClass('inHeal');
+						var arr = [];
+						var count =4;
+						while(count--){
+							arr.push({
+								top:Math.random()/8
+							});
+						};
+						async.each(arr,function(posi,cb){
+							box.animate({
+								top:posi.top+orgiginTop+'rem'
+							},50,cb);
+							
+						},function(err,data){
+							box.css({
+								top:orgiginTop+'rem'
+							});
+							box.removeClass('inHeal');
+							cb();
+						});
 					};
 
 					dict[method](option);

@@ -88,10 +88,16 @@ angular
 					return karazhanDesc.getChessDesc(ch.type);
 				};
 
-				scope.getSkillDesc = function(type){
-					if(!type){
-						return '';
+
+				scope.getSkillList = function(chType){
+					if(!room || !room.chessList || !room.currChessId){
+						return [];
 					}
+					var ch = _.find(room.chessList,function(ch){return ch.id == room.currChessId;});
+					return karazhanDesc.getSkillListByChessType(ch.type);
+				};
+
+				scope.getSkillDesc = function(type){
 					return karazhanDesc.getSkillDesc(type);
 				};
 

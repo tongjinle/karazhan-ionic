@@ -195,12 +195,24 @@ angular.module('starter.services', [])
 		'顺势斩,对目标平行三格敌人造成6点伤害'
 	];
 
+	var map = [
+		[0],
+		[1],
+		[2],
+		[3,4],
+		[5,6],
+		[7]
+	];
+
 	return {
 		getChessDesc:function(type){
 			return chessDesc[type];
 		},
 		getSkillDesc:function(type){
 			return skillDesc[type];
+		},
+		getSkillListByChessType(chessType){
+			return map[chessType];
 		}
 	};
 });

@@ -440,10 +440,25 @@ angular
 
 				var statusMachineDict = {
 					// 尚未开始
-					'0': null,
+					'0': function(){},
 					// 不是我的回合
 					'1': function() {
 						console.log('not my turn');
+						// 发送心跳
+						var heartBeat =function(){
+							karazhan.heartBeat(token,room.id)
+								.success(function(data){
+									if(data.flag){
+										if(data.isNew){
+											refresh();
+										}else{
+											heartBeat();
+										}
+									}
+								});
+
+						};
+						heartBeat();
 					},
 					// 2.x 表示都是我的回合
 					// 还没有选择棋子

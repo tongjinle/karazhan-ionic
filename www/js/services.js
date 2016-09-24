@@ -54,6 +54,17 @@ angular.module('starter.services', [])
 					}
 				});
 			},
+			// 心跳
+			heartBeat:function(token,roomId){
+				return $http({
+					url:addr+'/user/heartBeat',
+					method:'GET',
+					params:{
+						token:token,
+						roomId:roomId
+					}
+				});
+			},
 			getActiveChessList: function(token, roomId) {
 				return $http({
 					url: addr + '/user/getActiveChessList',

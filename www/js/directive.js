@@ -117,7 +117,13 @@ angular
 					// 已经选择了棋子
 					else if (status == '2.1') {
 						if (isInTip) {
-							act.moveChess(posi);
+							if(!room.currSkillId){
+								act.moveChess(posi);
+
+							}else{
+								act.chooseSkillTarget(posi);
+								
+							}
 						} else {
 							act.unChooseChess();
 						}
@@ -486,6 +492,23 @@ angular
 						karazhan.getActiveSkillList(token, room.id)
 							.success(function(data) {
 								scope.skillList = data.skillList;
+
+								if (room.currSkillId != undefined) {
+									_.find(scope.skillList, function(sk) {
+										if (sk.id == room.currSkillId) {
+											sk.isSelected = true;
+											return true;
+										}
+									});
+
+									karazhan.getSkillTargetList(token, room.id)
+										.success(function(data) {
+											// scope.skillTargetList = data.positionList;
+
+											scope.tipType = 'target';
+											scope.tipPosiList = data.positionList;
+										});
+								}
 							});
 					},
 					// 还没有选择技能
@@ -507,17 +530,18 @@ angular
 											sk.isSelected = true;
 											return true;
 										}
-									})
+									});
+
+									karazhan.getSkillTargetList(token, room.id)
+										.success(function(data) {
+											// scope.skillTargetList = data.positionList;
+
+											scope.tipType = 'target';
+											scope.tipPosiList = data.positionList;
+										});
 								}
 							});
 
-						karazhan.getSkillTargetList(token, room.id)
-							.success(function(data) {
-								// scope.skillTargetList = data.positionList;
-
-								scope.tipType = 'target';
-								scope.tipPosiList = data.positionList;
-							});
 
 
 					},
@@ -579,13 +603,6 @@ angular
 				};
 
 
-				// scope.$on('room.change', function(e, v) {
-				// 	scope.room = v;
-				// 	createBasicLayer();
-				// 	createTipLayer();
-				// 	// setTimeout(createBasicBox,2000);
-				// 	// createBasicBox();
-				// });
 
 				// 个人信息
 				var myInfo = scope.myInfo = {
@@ -596,18 +613,6 @@ angular
 
 
 
-				// scope.$watch('room', function(nv) {
-				// 	if (nv) {
-				// 		room = nv;
-
-				// 		createBasicLayer();
-				// 		createTipLayer();
-				// 		createChooseLayer();
-
-				// 		// after init room
-				// 		afterInitRoom();
-				// 	}
-				// });
 
 
 				scope.$watch('tipPosiList', function(nv) {

@@ -16,7 +16,7 @@
     </ion-list>
 
 
-    <button class="button button-block button-calm" ng-show="!!selectedRoom" ng-click="enterRoom(selectedRoom)">
+    <button class="button button-block button-calm" ng-show="!!selectedRoom && selectedRoom.status !== 0" ng-click="enterRoom(selectedRoom)">
       <i class="icon ion-loading-c"></i> Enter Room
     </button>
 

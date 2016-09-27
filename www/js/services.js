@@ -45,6 +45,46 @@ angular.module('starter.services', [])
 					}
 				});
 			},
+			createRoom:function(token){
+				return $http({
+					url:addr + '/user/createRoom',
+					method:'POST',
+					data:{
+						token:token
+					}
+				});
+			},
+			joinRoom:function(token,roomId){
+				return $http({
+					url:addr + '/user/joinRoom',
+					method:'POST',
+					data:{
+						token:token,
+						roomId:roomId
+					}
+				});
+			},
+			quitRoom:function(token,roomId){
+				return $http({
+					url:addr+'/user/quitRoom',
+					method:'POST',
+					data:{
+						token:token,
+						roomId:roomId
+					}
+				});
+			},
+			setStatus:function(token,roomId,status){
+				return $http({
+					url:addr + '/user/setStatus',
+					method:'POST',
+					data:{
+						token:token,
+						roomId:roomId,
+						status:status
+					}
+				});
+			},
 			getRoomInfo: function(token, roomId) {
 				return $http({
 					url: addr + '/user/getRoomInfo/' + roomId,

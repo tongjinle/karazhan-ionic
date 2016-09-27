@@ -1,3 +1,5 @@
+@import "www/lib/ionic/scss/_variables.scss";
+
 .room-list{ 
 	.turn{
 		color:steelblue;
@@ -6,5 +8,9 @@
 			color:red;
 		}
 
+	}
+
+	.selected{
+		background-color: $energized;
 	}
 }

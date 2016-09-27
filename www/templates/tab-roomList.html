@@ -1,10 +1,10 @@
 <ion-view view-title="Room List" class="room-list">
   <ion-content class="padding">
     <ion-list>
-      <ion-item ng-repeat="room in roomList" ng-click="enterRoom(room)">
+      <ion-item ng-repeat="room in roomList" ng-click="selectRoom(room)" ng-class="selectedRoom === room ? 'selected':''">
         <div class="item-icon-left">
           <i class="icon" ng-class="statusDict[room.status]" title="{{room.status}}"> 
-          {{getTitle(room)}}
+            {{getTitle(room)}}
           </i>
         </div>
 
@@ -14,6 +14,28 @@
         
       </ion-item>
     </ion-list>
+
+
+    <button class="button button-block button-calm" ng-show="!!selectedRoom" ng-click="enterRoom(selectedRoom)">
+      <i class="icon ion-loading-c"></i> Enter Room
+    </button>
+
+    <button ng-show="selectedRoom && selectedRoomStatus === 0 && selectedRoomPlayerStatus === undefined" class="button button-block button-calm" ng-click="joinRoom()">
+      <i class="icon ion-loading-c"></i> Join Room
+    </button>
+
+    <button class="button button-block button-balanced" ng-click="createRoom()">
+      <i class="icon ion-loading-c"></i> Create Room
+    </button>
+
+    <button ng-show="selectedRoom && selectedRoomStatus === 0 && (selectedRoomPlayerStatus === 0 || selectedRoomPlayerStatus === 1)"  class="button button-block button-assertive" ng-click="quitRoom()">
+      <i class="icon ion-loading-c"></i> Quit Room
+    </button>
+
+    <button ng-show="selectedRoom && selectedRoomStatus === 0 && (selectedRoomPlayerStatus === 0 || selectedRoomPlayerStatus === 1)" class="button button-block button-positive" ng-click="setStatus()">
+      <i class="icon ion-loading-c"></i> {{selectedRoomPlayerStatus === 0?'Ready':'Unready'}}
+    </button>
+
 
 
   </ion-content>

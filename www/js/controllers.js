@@ -24,6 +24,7 @@ angular.module('starter.controllers', [])
 	};
 	$scope.getRoomList = function(isMine, status, pageIndex, pageSize) {
 		var token = localStorage.getItem('token');
+		$scope.selectedRoom = undefined;
 		karazhan.getRoomList(token, page.isMine, page.status, page.pageIndex, page.pageSize)
 			.success(function(data) {
 				if (!data.flag) {
@@ -37,8 +38,6 @@ angular.module('starter.controllers', [])
 
 	$scope.enterRoom = function(room) {
 		$location.path('tab/game/' + room.id);
-		// $location.path('tab/game');
-		// $location.path('tab/userLogin');
 	};
 
 	$scope.getTitle = function(room) {
@@ -63,6 +62,113 @@ angular.module('starter.controllers', [])
 			isMine: !!user,
 			isTurn: user && user.status == 3
 		};
+	};
+
+	$scope.selectedRoom = undefined;
+	// 选择房间
+	$scope.selectRoom = function(room){
+		var selectedRoom = $scope.selectedRoom = room;
+		
+		var status = undefined;
+		var playerStatus = undefined;
+
+		status = selectedRoom.status;
+		if(status === 0){
+			var username = localStorage.getItem('username');
+			var p = _.find(selectedRoom.playerList,function(p){return p.playerName == username;});
+			// 非游戏玩家选择,自然无效
+			if(p){
+				playerStatus = p.status;
+			}
+		}
+		
+		$scope.selectedRoomStatus = status;
+		$scope.selectedRoomPlayerStatus = playerStatus;
+		
+	};
+
+	$scope.createRoom = function(){
+		var token = localStorage.getItem('token');
+
+		karazhan.createRoom(token)
+		.success(function(data){
+			if(data.flag){
+				$scope.getRoomList();
+			}else{
+				alert('create room fail!');
+			}
+		});
+	};
+
+	$scope.joinRoom = function(){
+		var selectedRoom = $scope.selectedRoom;
+
+		// 没有选择房间 或者 房间不是未开始状态
+		// join显然应该无效
+		if(!selectedRoom || selectedRoom.status !==0){
+			return;
+		}
+
+		var token = localStorage.getItem('token');
+		var roomId = selectedRoom.id;
+		
+		karazhan.joinRoom(token,roomId)
+		.success(function(data){
+			if(data.flag){
+				$scope.getRoomList();
+			}else{
+				alert('join room fail!');
+			}
+		});
+	};
+
+	$scope.quitRoom = function () {
+		var selectedRoom = $scope.selectedRoom;
+
+		// 没有选择房间 或者 房间不是未开始状态
+		// join显然应该无效
+		if(!selectedRoom || selectedRoom.status !==0){
+			return;
+		}
+
+		var token = localStorage.getItem('token');
+		var roomId = selectedRoom.id;
+
+		karazhan.quitRoom(token,roomId)
+		.success(function(data){
+			if(data.flag){
+				$scope.getRoomList();
+			}else{
+				alert('quit room fail!');
+			}
+		});
+	};
+
+	$scope.setStatus = function(){
+		var selectedRoom = $scope.selectedRoom;
+
+		// 没有选择房间 或者 房间不是未开始状态
+		// join显然应该无效
+		if(!selectedRoom || selectedRoom.status !==0){
+			return;
+		}
+
+		var token = localStorage.getItem('token');
+		var username = localStorage.getItem('username');
+		var p = _.find(selectedRoom.playerList,function(p){return p.playerName == username;});
+		// 非游戏玩家选择,自然无效
+		if(!p){
+			return;
+		}
+		var playerStatus = p.status == 0 ? 1 : 0;
+		karazhan.setStatus(token,selectedRoom.id, playerStatus)
+		.success(function(data){
+			if(!data.flag){
+				alert('setStatus fail!');
+			}else{
+				$scope.selectedRoomPlayerStatus = p.status = (p.status+1)%2;
+			}
+		})
 	};
 
 

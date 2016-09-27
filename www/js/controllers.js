@@ -24,7 +24,7 @@ angular.module('starter.controllers', [])
 	};
 	$scope.getRoomList = function(isMine, status, pageIndex, pageSize) {
 		var token = localStorage.getItem('token');
-		$scope.selectedRoom = undefined;
+		var selectedRoomId = localStorage.getItem('selectedRoomId');
 		karazhan.getRoomList(token, page.isMine, page.status, page.pageIndex, page.pageSize)
 			.success(function(data) {
 				if (!data.flag) {
@@ -32,6 +32,12 @@ angular.module('starter.controllers', [])
 				} else {
 					$scope.roomList = data.roomList;
 					page.totalCount = data.totalCount;
+
+					$scope.selectedRoom = undefined;
+					if(selectedRoomId != undefined){
+						var selectedRoom = _.find($scope.roomList,function(room){return room.id == selectedRoomId;});
+						$scope.selectRoom(selectedRoom);
+					}
 				}
 			});
 	};
@@ -68,7 +74,8 @@ angular.module('starter.controllers', [])
 	// 选择房间
 	$scope.selectRoom = function(room){
 		var selectedRoom = $scope.selectedRoom = room;
-		
+		localStorage.setItem('selectedRoomId',room.id);
+
 		var status = undefined;
 		var playerStatus = undefined;
 

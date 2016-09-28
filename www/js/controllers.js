@@ -175,10 +175,10 @@ angular.module('starter.controllers', [])
 		var playerStatus = p.status == 0 ? 1 : 0;
 		karazhan.setStatus(token,selectedRoom.id, playerStatus)
 		.success(function(data){
-			if(!data.flag){
-				alert('setStatus fail!');
+			if(data.flag){
+				$scope.getRoomList();
 			}else{
-				$scope.selectedRoomPlayerStatus = p.status = (p.status+1)%2;
+				alert('setStatus fail!');
 			}
 		})
 	};

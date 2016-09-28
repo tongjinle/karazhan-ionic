@@ -218,6 +218,16 @@ angular.module('starter.services', [])
 						roomId:roomId
 					}
 				});
+			},
+			surrender:function(token,roomId){
+				return $http({
+					url:addr+'/user/surrender',
+					method:'POST',
+					data:{
+						token:token,
+						roomId:roomId
+					}
+				});
 			}
 
 

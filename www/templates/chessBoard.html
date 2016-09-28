@@ -1,6 +1,6 @@
 <div>
 	<div class="chess-board-round">
-		<div class="player player-red" ng-class="{'player-turn':red.status == 3}">
+		<div class="player player-red" ng-class="{'player-turn':room.status !=3 && red.status == 3}">
 			<span class="energy">
 				{{red.energy}}
 			</span>
@@ -14,7 +14,7 @@
 				{{room.roundIndex}}
 			</div>
 		</div>
-		<div class="player player-black" ng-class="{'player-turn':black.status == 3}">
+		<div class="player player-black" ng-class="{'player-turn':room.status !=3 && black.status == 3}">
 			<span class="text">
 				{{black.playerName}}
 			</span>
@@ -50,7 +50,8 @@
 	<div ng-show="myInfo.username == room.currPlayerName" class="skill-layer" ng-style="{'top':room.height*boxSize + roundLayerHeight +'rem'}">
 		<skill ng-repeat ="sk in skillList" >
 		</skill>
-		<div class="rest" ng-click="rest()">Rest</div>
+		<div class="surrender" ng-click="surrender()">投</div>
+		<div class="rest" ng-click="rest()">休</div>
 	</div>
 
 	<div class="chessDesc" ng-show="room.currChessId">
@@ -60,6 +61,10 @@
 		<div ng-repeat="skType in getSkillList()">
 			{{getSkillDesc(skType)}}
 		</div>
+	</div>
+
+	<div class="judge" ng-class="'judge-' + (room.winColor == 0 ? 'red' : 'black')" ng-show="room.status === 3">
+		WIN
 	</div>
 
 </div>

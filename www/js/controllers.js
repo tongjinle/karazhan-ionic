@@ -36,7 +36,12 @@ angular.module('starter.controllers', [])
 					$scope.selectedRoom = undefined;
 					if(selectedRoomId != undefined){
 						var selectedRoom = _.find($scope.roomList,function(room){return room.id == selectedRoomId;});
-						$scope.selectRoom(selectedRoom);
+						if(selectedRoom){
+							$scope.selectRoom(selectedRoom);
+							
+						}else{
+							localStorage.setItem(selectedRoomId,undefined);
+						}
 					}
 				}
 			});

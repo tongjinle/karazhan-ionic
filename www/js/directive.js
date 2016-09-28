@@ -256,6 +256,14 @@ angular
 									refresh();
 								}
 							});
+					},
+					'surrender':function(){
+						karazhan.surrender(token,room.id)
+						.success(function(data){
+							if(data.flag){
+								refresh();
+							}
+						});
 					}
 				};
 
@@ -263,6 +271,10 @@ angular
 				scope.rest = function() {
 					act['rest']();
 				};
+
+				scope.surrender = function(){
+					act['surrender']();
+				}
 
 				var animate = function(method, option, cb) {
 					var dict = {};
@@ -555,7 +567,9 @@ angular
 
 
 					// 已经结束
-					'3': null
+					'3': function(){
+						
+					}
 				};
 
 				var getStatus = function(playerName, room) {

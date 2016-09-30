@@ -14,6 +14,10 @@ angular
 				var boxSize = scope.boxSize = .5;
 				var room;
 				var token = localStorage.getItem('token');
+				var roundIndex=-1;
+
+				// change栈
+				var chgStack = [];
 
 
 				// create chessBoard ground
@@ -179,12 +183,9 @@ angular
 						karazhan.moveChess(token, room.id, posi)
 							.success(function(data) {
 								if (data.flag) {
-									animate('move', {
-										chessId: room.currChessId,
-										position: posi
-									}, function() {
-										refresh();
-									});
+									chgStack.push(data.changes);
+									animateByChgs(data.changes,refresh);
+
 								}
 							});
 					},
@@ -222,30 +223,8 @@ angular
 						karazhan.chooseSkillTarget(token, room.id, posi)
 							.success(function(data) {
 								if (data.flag) {
-									console.log(data.changes);
-									var options = {
-										currChessId:currChessId,
-										currSkillId:currSkillId,
-										changes: data.changes
-									};
-									var arr = [];
-									_.each(data.changes,function(chg){
-										var fn;
-										if(chg.type == 1){
-											fn = function(cb){
-												animate('hurt',chg.detail,cb);
-											};
-										}else if(chg.type == 2){
-											fn = function(cb){
-												animate('heal',chg.detail,cb);
-											}
-										}
-										arr.push(fn);
-									});
-									async.series(arr,function(err,cb){
-										refresh();
-									});
-									
+									chgStack.push(data.changes);
+									animateByChgs(data.changes,refresh);
 								}
 							});
 					},
@@ -274,11 +253,46 @@ angular
 
 				scope.surrender = function(){
 					act['surrender']();
-				}
+				};
+
+				var animateByChgs = function(chgs,cb){
+					var _cb = cb;
+					async.each(chgs,function(chg,cb){
+						var type = chg.type;
+						// position
+						if(type == 0){
+							var chBox = $('[chid="'+chg.detail.sourceChessId+'"]');
+							chBox.css({
+								'left':(chg.detail.abs.x - chg.detail.rela.x) * boxSize + 'rem',
+								'top':(chg.detail.abs.y - chg.detail.rela.y) * boxSize + 'rem'
+							});
+							animate('move', {
+								chessId: chg.detail.sourceChessId,
+								position: chg.detail.abs
+							}, cb);
+						}else if(type == 1){
+							if(chg.detail.rela <0){
+								animate('hurt',chg.detail,cb);
+								
+							}else{
+								animate('heal',chg.detail,cb);
+								
+							}
+						}else if(type == 2){
+						}else{
+							cb();
+						}
+					},function(err,data){
+						_cb && _cb();
+					})
+					
+
+				};
 
 				var animate = function(method, option, cb) {
 					var dict = {};
 					dict['move'] = function(option) {
+						console.log(option);
 						var chessId = option.chessId;
 						var position = option.position;
 
@@ -387,6 +401,8 @@ angular
 							myInfo.playerColor = getColor(username, room);
 							myInfo.status = getStatus(username, room);
 
+							roundIndex = room.roundIndex;
+
 							scope.tipPosiList && (scope.tipPosiList.length = 0);
 							showTip();
 
@@ -462,15 +478,16 @@ angular
 					// 不是我的回合
 					'1': function() {
 						console.log('not my turn');
+						
 						// 发送心跳
 						var heartBeat =function(){
 							karazhan.heartBeat(token,room.id)
 								.success(function(data){
 									if(data.flag){
-										if(data.isNew){
-											refresh();
-										}else{
+										if(!data.isNew){
 											heartBeat();
+										}else{
+											refresh();
 										}
 									}
 								});
@@ -481,6 +498,15 @@ angular
 					// 2.x 表示都是我的回合
 					// 还没有选择棋子
 					'2.0': function() {
+						karazhan.getLastChanges(token,room.id,roundIndex)
+							.success(function(data){
+								setTimeout(function(){
+									chgStack = chgStack.concat(data.changes);
+									animateByChgs(data.changes);
+
+								},500);
+								
+							});
 						karazhan.getActiveChessList(token, room.id)
 							.success(function(data) {
 								console.log(data);
@@ -491,7 +517,7 @@ angular
 									}).posi;
 								});
 								scope.tipType = 'chess';
-							})
+							});
 					},
 					// 棋子还没有移动
 					'2.1': function() {
@@ -680,7 +706,7 @@ angular
 		}
 	}])
 
-.directive('chooseBox', [function() {
+	.directive('chooseBox', [function() {
 		return {
 			restrict: 'E',
 			templateUrl: '/templates/chooseBox.html',

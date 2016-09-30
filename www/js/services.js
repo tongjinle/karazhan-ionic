@@ -228,6 +228,17 @@ angular.module('starter.services', [])
 						roomId:roomId
 					}
 				});
+			},
+			getLastChanges:function(token,roomId,roundIndex){
+				return $http({
+					url:addr+'/user/getLastChanges',
+					method:'GET',
+					params:{
+						token:token,
+						roomId:roomId,
+						roundIndex:roundIndex
+					}
+				});
 			}
 
 

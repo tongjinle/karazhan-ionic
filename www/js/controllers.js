@@ -231,7 +231,7 @@ angular.module('starter.controllers', [])
 	$scope.isShowTip = false;
 
 	var user = $scope.user = {
-		username: 'falcon',
+		username: localStorage.getItem('username') || 'falcon',
 		password: ''
 	};
 

@@ -45,43 +45,43 @@ angular.module('starter.services', [])
 					}
 				});
 			},
-			createRoom:function(token){
+			createRoom: function(token) {
 				return $http({
-					url:addr + '/user/createRoom',
-					method:'POST',
-					data:{
-						token:token
+					url: addr + '/user/createRoom',
+					method: 'POST',
+					data: {
+						token: token
 					}
 				});
 			},
-			joinRoom:function(token,roomId){
+			joinRoom: function(token, roomId) {
 				return $http({
-					url:addr + '/user/joinRoom',
-					method:'POST',
-					data:{
-						token:token,
-						roomId:roomId
+					url: addr + '/user/joinRoom',
+					method: 'POST',
+					data: {
+						token: token,
+						roomId: roomId
 					}
 				});
 			},
-			quitRoom:function(token,roomId){
+			quitRoom: function(token, roomId) {
 				return $http({
-					url:addr+'/user/quitRoom',
-					method:'POST',
-					data:{
-						token:token,
-						roomId:roomId
+					url: addr + '/user/quitRoom',
+					method: 'POST',
+					data: {
+						token: token,
+						roomId: roomId
 					}
 				});
 			},
-			setStatus:function(token,roomId,status){
+			setStatus: function(token, roomId, status) {
 				return $http({
-					url:addr + '/user/setStatus',
-					method:'POST',
-					data:{
-						token:token,
-						roomId:roomId,
-						status:status
+					url: addr + '/user/setStatus',
+					method: 'POST',
+					data: {
+						token: token,
+						roomId: roomId,
+						status: status
 					}
 				});
 			},
@@ -95,13 +95,13 @@ angular.module('starter.services', [])
 				});
 			},
 			// 心跳
-			heartBeat:function(token,roomId){
+			heartBeat: function(token, roomId) {
 				return $http({
-					url:addr+'/user/heartBeat',
-					method:'GET',
-					params:{
-						token:token,
-						roomId:roomId
+					url: addr + '/user/heartBeat',
+					method: 'GET',
+					params: {
+						token: token,
+						roomId: roomId
 					}
 				});
 			},
@@ -146,97 +146,120 @@ angular.module('starter.services', [])
 					}
 				});
 			},
-			moveChess:function(token,roomId,posi){
+			moveChess: function(token, roomId, posi) {
 				return $http({
-					url:addr+'/user/moveChess',
-					method:'POST',
-					data:{
-						token:token,
-						roomId:roomId,
-						position:posi
+					url: addr + '/user/moveChess',
+					method: 'POST',
+					data: {
+						token: token,
+						roomId: roomId,
+						position: posi
 					}
 				});
 			},
-			getActiveSkillList:function(token,roomId){
+			getActiveSkillList: function(token, roomId) {
 				return $http({
-					url:addr+'/user/getActiveSkillList',
-					method:'GET',
+					url: addr + '/user/getActiveSkillList',
+					method: 'GET',
 					params: {
 						token: token,
 						roomId: roomId
 					}
 				});
 			},
-			chooseSkill:function(token,roomId,skillId){
+			chooseSkill: function(token, roomId, skillId) {
 				return $http({
-					url:addr+'/user/chooseSkill',
-					method:'POST',
-					data:{
-						token:token,
-						roomId:roomId,
-						skillId:skillId
+					url: addr + '/user/chooseSkill',
+					method: 'POST',
+					data: {
+						token: token,
+						roomId: roomId,
+						skillId: skillId
 					}
 				});
 			},
-			unChooseSkill:function(token,roomId){
+			unChooseSkill: function(token, roomId) {
 				return $http({
-					url:addr+'/user/unChooseSkill',
-					method:'POST',
-					data:{
-						token:token,
-						roomId:roomId
+					url: addr + '/user/unChooseSkill',
+					method: 'POST',
+					data: {
+						token: token,
+						roomId: roomId
 					}
 				});
 			},
-			getSkillTargetList:function(token,roomId){
+			getSkillTargetList: function(token, roomId) {
 				return $http({
-					url:addr+'/user/getSkillTargetList',
-					method:'GET',
-					params:{
-						token:token,
-						roomId:roomId
+					url: addr + '/user/getSkillTargetList',
+					method: 'GET',
+					params: {
+						token: token,
+						roomId: roomId
 					}
 				});
 			},
-			chooseSkillTarget:function(token,roomId,posi){
+			chooseSkillTarget: function(token, roomId, posi) {
 				return $http({
-					url:addr+'/user/chooseSkillTarget',
-					method:'POST',
-					data:{
-						token:token,
-						roomId:roomId,
-						position:posi
+					url: addr + '/user/chooseSkillTarget',
+					method: 'POST',
+					data: {
+						token: token,
+						roomId: roomId,
+						position: posi
 					}
 				});
 			},
-			rest:function(token,roomId){
+			rest: function(token, roomId) {
 				return $http({
-					url:addr+'/user/rest',
-					method:'POST',
-					data:{
-						token:token,
-						roomId:roomId
+					url: addr + '/user/rest',
+					method: 'POST',
+					data: {
+						token: token,
+						roomId: roomId
 					}
 				});
 			},
-			surrender:function(token,roomId){
+			surrender: function(token, roomId) {
 				return $http({
-					url:addr+'/user/surrender',
-					method:'POST',
-					data:{
-						token:token,
-						roomId:roomId
+					url: addr + '/user/surrender',
+					method: 'POST',
+					data: {
+						token: token,
+						roomId: roomId
 					}
 				});
 			},
-			getLastChanges:function(token,roomId,roundIndex){
+			getChanges: function(token, roomId, changeIndex) {
 				return $http({
-					url:addr+'/user/getLastChanges',
-					method:'GET',
-					params:{
-						token:token,
-						roomId:roomId,
-						roundIndex:roundIndex
+					url: addr + '/user/getChanges',
+					method: 'GET',
+					params: {
+						token: token,
+						roomId: roomId,
+						changeIndex: changeIndex
+					}
+				});
+			},
+			// 获取当前状态
+			getStatus: function(token, roomId) {
+				return $http({
+					url: addr + '/user/getStatus',
+					method: 'GET',
+					params: {
+						token: token,
+						roomId: roomId
+					}
+				});
+			},
+
+			// 获取初始地图
+			getSnapshot: function(token, roomId) {
+				return $http({
+					url: addr + '/user/getSnapshot',
+					method: 'GET',
+					params: {
+						token: token,
+						roomId: roomId
 					}
 				});
 			}
@@ -271,21 +294,44 @@ angular.module('starter.services', [])
 		[0],
 		[1],
 		[2],
-		[3,4],
-		[5,6],
+		[3, 4],
+		[5, 6],
 		[7]
 	];
 
 	return {
-		getChessDesc:function(type){
+		getChessDesc: function(type) {
 			return chessDesc[type];
 		},
-		getSkillDesc:function(type){
+		getSkillDesc: function(type) {
 			return skillDesc[type];
 		},
-		getSkillListByChessType(chessType){
+		getSkillListByChessType(chessType) {
 			return map[chessType];
 		}
 	};
-});
+})
 
+.factory('karazhanDirector', function() {
+	// 
+	/*
+		{
+			chessList,
+			skillList,
+			playerList,
+			
+		}
+	*/
+	var room;
+	return {
+		getRoom: function() {
+			return info;
+		},
+		setMap: function(mapInfo) {
+			info = mapInfo;
+		},
+		acceptChg: function(chg) {
+
+		}
+	};
+});

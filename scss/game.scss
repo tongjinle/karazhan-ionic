@@ -232,7 +232,7 @@ $boxSize:.5rem;
 				@include layer(400);
 				.choose-box{
 					@include box;
-					opacity: 0.3;
+					opacity: 0.1;
 					background-color: blue;
 				}
 			}

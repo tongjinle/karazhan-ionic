@@ -1,6 +1,6 @@
 angular
 	.module('starter.directive', [])
-	.directive('chessBoard', ['karazhan','karazhanDesc', '$compile', function(karazhan,karazhanDesc, $compile) {
+	.directive('chessBoard', ['karazhan', 'karazhanDesc', '$timeout', function(karazhan, karazhanDesc, $timeout) {
 		return {
 			restrict: 'E',
 			templateUrl: '/templates/chessBoard.html',
@@ -12,13 +12,414 @@ angular
 				// 单位rem
 				scope.roundLayerHeight = .6;
 				var boxSize = scope.boxSize = .5;
-				var room;
+
+
+				var statusDict = {
+					beforeStart: 0,
+					notMyTurn: 1,
+					beforeChooseChess: 2,
+					beforeMove: 3,
+					beforeChooseSkill: 4,
+					beforeChooseSkillTarget: 5,
+					gameOver: 6,
+				};
+
+				var changeTypeDict = {
+					position: 0,
+					hp: 1,
+					energy: 2
+				};
+
 				var token = localStorage.getItem('token');
-				var roundIndex=-1;
-
-				// change栈
+				var roomId = scope.roomId;
+				var room;
 				var chgStack = [];
+				var gameStatus;
+				var lastAnimateRoundIndex = -1;
+				var lastProcDataIndex = -1;
+				// 是否静默方式处理changes
+				var isSlient = true;
+				var isFirstEnter = true;
 
+				window.ss = scope;
+
+				// tip
+				var tipPosiList = scope.tipPosiList = [];
+				scope.tipType = undefined;
+				window.tpl = tipPosiList;
+
+				// 获取初始状态
+
+
+				// 处理changes
+				// isSlient,是否以静默方式处理,如果是,则不执行动画效果
+				function procChgs(changes, isSlient, cb) {
+					var arr = [];
+					// animate
+
+					if (!isSlient) {
+						arr.push(function(cb) {
+							$timeout(cb, 500);
+						});
+
+						arr.push(function(cb) {
+							async.eachSeries(changes, function(chg, cb) {
+								animate(chg, cb);
+							}, cb);
+						});
+					}
+
+					// proc data		
+					arr.push(function(cb) {
+						_.each(changes, procChgData);
+						cb();
+					});
+
+
+
+					async.series(arr, cb);
+
+
+
+					chgStack = chgStack.concat(changes);
+				}
+
+
+
+				// proc data
+				function procChgData(chg) {
+					var dict = {};
+					dict['position'] = function(detail) {
+						var chessId = detail.sourceChessId;
+
+						var ch = _.find(room.chessList, function(ch) {
+							return ch.id == chessId;
+						});
+						ch.posi = detail.abs;
+					};
+
+					if (chg.type == changeTypeDict.position) {
+						dict['position'](chg.detail);
+					}
+
+				}
+
+				// 动画
+				function animate(chg, cb) {
+					var dict = {};
+					dict['move'] = function(chg, cb) {
+						var chessId = chg.detail.sourceChessId;
+						var position = chg.detail.abs;
+
+						var chBox = $('[chid="' + chessId + '"]');
+						chBox.animate({
+							left: position.x * boxSize + 'rem',
+							top: position.y * boxSize + 'rem'
+						}, 500, function() {
+							cb();
+							scope.$apply();
+						});
+					};
+
+					var type = chg.type;
+					if (type == changeTypeDict.position) {
+						dict['move'](chg, cb);
+					} else {
+						cb();
+					}
+				}
+
+				function getSnapshot(cb) {
+					karazhan.getSnapshot(token, roomId)
+						.success(function(data) {
+							if (data.flag) {
+								room = scope.room = data.info;
+								console.log(room);
+								window.room = room;
+								cb && cb();
+							}
+						});
+				}
+
+				// 获取status
+				function getStatus(cb) {
+					karazhan.getStatus(token, roomId)
+						.success(function(data) {
+							if (data.flag) {
+								gameStatus = data.status;
+								cb();
+							}
+						});
+				}
+
+
+				// 获取changes
+				function getChgs(roundIndex, cb) {
+					karazhan.getChanges(token, roomId, roundIndex)
+						.success(function(data) {
+							if (data.flag) {
+								if (isFirstEnter) {
+									var parts = sliceChangesByRound(data.changes);
+									var arr = [];
+									arr.push(function(cb) {
+										procChgs(parts.prev, true, cb);
+
+									});
+									arr.push(function(cb) {
+										procChgs(parts.last, false, cb);
+									});
+
+									async.series(arr, cb);
+
+								} else {
+									procChgs(data.changes, false, cb);
+								}
+
+
+							}
+						});
+
+					function sliceChangesByRound(changes) {
+						var maxRound = _.max(changes, function(chg) {
+							return chg.round;
+						});
+						var maxRoundIndex = maxRound ? maxRound.round : 0;
+
+						var prev = _.filter(changes, function(chg) {
+							return chg.round < maxRoundIndex;
+						});
+						var last = _.filter(changes, function(chg) {
+							return chg.round == maxRoundIndex;
+						});
+						return {
+							prev: prev,
+							last: last
+						};
+					}
+				}
+
+				function setTipPosiList(list) {
+					scope.tipPosiList.length = 0;
+					scope.tipPosiList = scope.tipPosiList.concat(list);
+				}
+
+				// 设置可以活动的chess
+				function setActiveChessList(cb) {
+					karazhan.getActiveChessList(token, roomId)
+						.success(function(data) {
+							if (data.flag) {
+								var chessIdList = data.chessIdList;
+								setTipPosiList(chessIdList.map(function(chId) {
+									return _.find(room.chessList, function(n) {
+										return n.id == chId;
+									}).posi;
+								}));
+
+								scope.tipType = 'chess';
+							}
+							cb && cb();
+						});
+				}
+
+				function setMoveRange(cb) {
+					karazhan.getMoveRange(token, roomId)
+						.success(function(data) {
+							if (data.flag) {
+								scope.tipType = 'move';
+								scope.tipPosiList = data.positionList;
+							}
+							cb && cb();
+						});
+
+				}
+
+				function setActiveSkillList(cb) {
+					karazhan.getActiveSkillList(token, roomId)
+						.success(function(data) {
+							scope.skillList = data.skillList;
+
+							if (room.currSkillId != undefined) {
+								_.find(scope.skillList, function(sk) {
+									if (sk.id == room.currSkillId) {
+										sk.isSelected = true;
+										return true;
+									}
+								});
+
+
+							}
+						});
+				}
+
+				function setSkillTargetList(cb) {
+					karazhan.getSkillTargetList(token, room.id)
+						.success(function(data) {
+							// scope.skillTargetList = data.positionList;
+							if (data.flag)
+								scope.tipType = 'target';
+							scope.tipPosiList = data.positionList;
+						});
+				}
+
+				// 系统Act
+				function gameAct(status) {
+					// 清空
+					scope.tipPosiList.length = 0;
+
+					if (gameStatus == statusDict.beforeStart) {
+
+					} else if (gameStatus == statusDict.gameOver) {
+
+					} else if (gameStatus == statusDict.notMyTurn) {
+						// todo
+						room.currChessId = undefined;
+						room.currSkillId = undefined;
+						scope.tipPosiList.length = 0;
+						// heartbeat
+					} else if (gameStatus == statusDict.beforeChooseChess) {
+						setActiveChessList();
+					} else if (gameStatus == statusDict.beforeMove) {
+						setMoveRange();
+					} else if (gameStatus == statusDict.beforeChooseSkill) {
+						getSkillTargetList();
+					}
+				}
+
+				// 用户Act,主要是touch
+				var act = {
+					// 选择棋子
+					"chooseChess": function(posi, cb) {
+						karazhan.chooseChess(token, roomId, posi)
+							.success(function(data) {
+								if (data.flag) {
+									var ch = _.find(room.chessList, function(ch) {
+										return ch.posi.x == posi.x && ch.posi.y == posi.y
+									});
+									room.currChessId = ch.id;
+
+									cb && cb();
+								}
+							});
+					},
+					// 反选棋子
+					"unChooseChess": function(cb) {
+						karazhan.unChooseChess(token, roomId)
+							.success(function(data) {
+								if (data.flag) {
+									room.currChessId = undefined;
+									cb && cb();
+								}
+							});
+					},
+					// 移动棋子
+					"moveChess": function(posi, cb) {
+						karazhan.moveChess(token, roomId, posi)
+							.success(function(data) {
+								if (data.flag) {
+									getChgs(chgStack.length - 1, cb);
+								}
+							});
+					},
+					// 选择技能
+					// hasUnChoose -> 是否有反选
+					"chooseSkill": function(skillId, hasUnChoose) {
+						var arr = [];
+						if (hasUnChoose) {
+							arr.push(function(cb) {
+								karazhan.unChooseSkill(token, room.id, skillId)
+									.success(function(data) {
+										cb(!data.flag);
+									});
+							})
+						}
+
+						if (skillId != null) {
+							arr.push(function(cb) {
+								karazhan.chooseSkill(token, room.id, skillId)
+									.success(function(data) {
+										cb(!data.flag);
+									});
+							});
+						}
+
+						async.series(arr, function(err) {
+							!err && refresh();
+						});
+					},
+
+					// 选择技能目标(施放技能)
+					"chooseSkillTarget": function(posi) {
+						var currChessId = room.currChessId;
+						var currSkillId = room.currSkillId;
+						karazhan.chooseSkillTarget(token, room.id, posi)
+							.success(function(data) {
+								if (data.flag) {
+									chgStack.push(data.changes);
+									animateByChgs(data.changes, refresh);
+								}
+							});
+					},
+					'rest': function() {
+						karazhan.rest(token, room.id)
+							.success(function(data) {
+								if (data.flag) {
+									refresh();
+								}
+							});
+					},
+					'surrender': function() {
+						karazhan.surrender(token, room.id)
+							.success(function(data) {
+								if (data.flag) {
+									refresh();
+								}
+							});
+					}
+				};
+
+				function userAct(status, posi, cb) {
+					var isInTip = isInTipPosiList(posi);
+
+					var refresh = function() {
+						getStatus(function() {
+							gameAct(gameStatus);
+						});
+					};
+					// 尚未选择棋子
+					if (status == statusDict.beforeChooseChess) {
+						if (isInTip) {
+							act.chooseChess(posi, refresh);
+						}
+					}
+					// 已经选择了棋子
+					else if (status == statusDict.beforeMove) {
+						if (isInTip) {
+							if (!room.currSkillId) {
+								act.moveChess(posi, refresh);
+
+							}
+						} else {
+							act.unChooseChess(refresh);
+						}
+					}
+					// 已经选择了技能
+					else if (status == statusDict.beforeChooseSkillTarget) {
+						if (isInTip) {
+							act.chooseSkillTarget(posi);
+						} else {
+							act.unChooseSkill();
+						}
+					}
+
+
+
+					// 是否在提示的格子里
+					function isInTipPosiList(posi) {
+						return !!_.find(scope.tipPosiList, function(po) {
+							return po.x == posi.x && po.y == posi.y;
+						});
+					}
+				}
 
 				// create chessBoard ground
 				var createBasicLayer = function() {
@@ -82,576 +483,32 @@ angular
 					});
 				};
 
-				scope.getChessDesc = function(chessId){
-					if(!chessId || !room.chessList){
-						return '';
-					}
-					var ch = _.find(room.chessList,function(ch){
-						return ch.id == chessId;
-					});
-					return karazhanDesc.getChessDesc(ch.type);
-				};
+
+				getSnapshot(function() {
+					// create layers
+					createBasicLayer();
+					createChooseLayer();
+					createTipLayer();
 
 
-				scope.getSkillList = function(chType){
-					if(!room || !room.chessList || !room.currChessId){
-						return [];
-					}
-					var ch = _.find(room.chessList,function(ch){return ch.id == room.currChessId;});
-					return karazhanDesc.getSkillListByChessType(ch.type);
-				};
+					$timeout(function() {
+						getChgs(chgStack.length - 1, function() {
+							getStatus(function() {
+								gameAct(gameStatus);
 
-				scope.getSkillDesc = function(type){
-					return karazhanDesc.getSkillDesc(type);
-				};
-
-
-				// touch 管理器
-				var touchManager = function(posi) {
-					var status = getStatus(myInfo.username, room);
-					var isInTip = isInTipPosiList();
-
-
-					// 尚未选择棋子
-					if (status == '2.0') {
-						if (isInTip) {
-							act.chooseChess(posi);
-						}
-					}
-					// 已经选择了棋子
-					else if (status == '2.1') {
-						if (isInTip) {
-							if(!room.currSkillId){
-								act.moveChess(posi);
-
-							}else{
-								act.chooseSkillTarget(posi);
-								
-							}
-						} else {
-							act.unChooseChess();
-						}
-					}
-					// 已经选择了技能
-					else if (status == '2.3') {
-						if (isInTip) {
-							act.chooseSkillTarget(posi);
-						} else {
-							act.unChooseSkill();
-						}
-					}
-
-
-
-					// 是否在提示的格子里
-					function isInTipPosiList() {
-						return !!_.find(scope.tipPosiList, function(po) {
-							return po.x == posi.x && po.y == posi.y;
+								isFirstEnter = false;
+							});
 						});
-					}
-
-				};
-
-				// 玩家
-				var act = {
-					// 选择棋子
-					"chooseChess": function(posi) {
-						var roomId = room.id;
-
-						karazhan.chooseChess(token, roomId, posi)
-							.success(function(data) {
-								if (data.flag) {
-									refresh();
-								}
-							});
-					},
-					// 反选棋子
-					"unChooseChess": function() {
-						var roomId = room.id;
-
-						karazhan.unChooseChess(token, roomId)
-							.success(function(data) {
-								if (data.flag) {
-
-									refresh();
-									
-								}
-							});
-					},
-					// 移动棋子
-					"moveChess": function(posi) {
-						karazhan.moveChess(token, room.id, posi)
-							.success(function(data) {
-								if (data.flag) {
-									chgStack.push(data.changes);
-									animateByChgs(data.changes,refresh);
-
-								}
-							});
-					},
-					// 选择技能
-					// hasUnChoose -> 是否有反选
-					"chooseSkill": function(skillId, hasUnChoose) {
-						var arr = [];
-						if (hasUnChoose) {
-							arr.push(function(cb) {
-								karazhan.unChooseSkill(token, room.id, skillId)
-									.success(function(data) {
-										cb(!data.flag);
-									});
-							})
-						}
-
-						if (skillId != null) {
-							arr.push(function(cb) {
-								karazhan.chooseSkill(token, room.id, skillId)
-									.success(function(data) {
-										cb(!data.flag);
-									});
-							});
-						}
-
-						async.series(arr, function(err) {
-							!err && refresh();
-						});
-					},
-
-					// 选择技能目标(施放技能)
-					"chooseSkillTarget": function(posi) {
-						var currChessId = room.currChessId;
-						var currSkillId = room.currSkillId;
-						karazhan.chooseSkillTarget(token, room.id, posi)
-							.success(function(data) {
-								if (data.flag) {
-									chgStack.push(data.changes);
-									animateByChgs(data.changes,refresh);
-								}
-							});
-					},
-					'rest': function() {
-						karazhan.rest(token, room.id)
-							.success(function(data) {
-								if (data.flag) {
-									refresh();
-								}
-							});
-					},
-					'surrender':function(){
-						karazhan.surrender(token,room.id)
-						.success(function(data){
-							if(data.flag){
-								refresh();
-							}
-						});
-					}
-				};
-
-
-				scope.rest = function() {
-					act['rest']();
-				};
-
-				scope.surrender = function(){
-					act['surrender']();
-				};
-
-				var animateByChgs = function(chgs,cb){
-					var _cb = cb;
-					async.each(chgs,function(chg,cb){
-						var type = chg.type;
-						// position
-						if(type == 0){
-							var chBox = $('[chid="'+chg.detail.sourceChessId+'"]');
-							chBox.css({
-								'left':(chg.detail.abs.x - chg.detail.rela.x) * boxSize + 'rem',
-								'top':(chg.detail.abs.y - chg.detail.rela.y) * boxSize + 'rem'
-							});
-							animate('move', {
-								chessId: chg.detail.sourceChessId,
-								position: chg.detail.abs
-							}, cb);
-						}else if(type == 1){
-							if(chg.detail.rela <0){
-								animate('hurt',chg.detail,cb);
-								
-							}else{
-								animate('heal',chg.detail,cb);
-								
-							}
-						}else if(type == 2){
-						}else{
-							cb();
-						}
-					},function(err,data){
-						_cb && _cb();
-					})
-					
-
-				};
-
-				var animate = function(method, option, cb) {
-					var dict = {};
-					dict['move'] = function(option) {
-						console.log(option);
-						var chessId = option.chessId;
-						var position = option.position;
-
-						var ch = _.find(room.chessList, function(ch) {
-							return ch.id == chessId;
-						});
-
-						var chBox = $('[chid="' + chessId + '"]');
-						var dist = Math.abs(ch.posi.x - position.x) + Math.abs(ch.posi.y - position.y);
-						chBox.animate({
-							left: position.x * boxSize + 'rem',
-							top: position.y * boxSize + 'rem'
-						}, /*dist**/ 500, cb);
-					};
-
-					dict['hurt'] = function(option) {
-						var currChess = _.find(room.chessList,function(ch){return ch.id == option.sourceChessId;});
-						var tagetChess = _.find(room.chessList,function(ch){return ch.id == option.targetChessId;});
-
-						var box = $('[chid="'+tagetChess.id+'"]');
-						var orgiginLeft = box.css('left').replace('px','')/100;
-						var orgiginTop = box.css('top').replace('px','')/100;
-						box.addClass('inHurt');
-						var arr = [];
-						var count =4;
-						while(count--){
-							arr.push({
-								left:(Math.random>.5?1:-1)* Math.random()/8,
-								top:(Math.random>.5?1:-1)*Math.random()/8
-							});
-						};
-						async.each(arr,function(posi,cb){
-							box.animate({
-								left:posi.left+orgiginLeft+'rem',
-								top:posi.top+orgiginTop+'rem'
-							},50,cb);
-							
-						},function(err,data){
-							box.css({
-								left:orgiginLeft+'rem',
-								top:orgiginTop+'rem'
-							});
-							box.removeClass('inHurt');
-							cb();
-						});
-					};
-
-					dict['heal'] = function(option) {
-						var tagetChess = _.find(room.chessList,function(ch){return ch.id == option.targetChessId;});
-
-						var box = $('[chid="'+tagetChess.id+'"]');
-						var orgiginTop = box.css('top').replace('px','')/100;
-						box.addClass('inHeal');
-						var arr = [];
-						var count =4;
-						while(count--){
-							arr.push({
-								top:Math.random()/8
-							});
-						};
-						async.each(arr,function(posi,cb){
-							box.animate({
-								top:posi.top+orgiginTop+'rem'
-							},50,cb);
-							
-						},function(err,data){
-							box.css({
-								top:orgiginTop+'rem'
-							});
-							box.removeClass('inHeal');
-							cb();
-						});
-					};
-
-					dict[method](option);
-				};
-
-				var refresh = function() {
-					console.log('refresh');
-
-					token = localStorage.getItem('token');
-					var roomId = scope.roomId;
-
-					scope.skillList = undefined;
-
-					karazhan.getRoomInfo(token, roomId)
-						.success(function(data) {
-							if (!data.flag) {
-								throw 'room not exist';
-							}
-
-							room = scope.room = data.info;
-
-							console.log('refresh',room);
-
-							if (!isInit) {
-								createBasicLayer();
-								createTipLayer();
-								createChooseLayer();
-								isInit = true;
-							}
-
-
-
-							var username = myInfo.username = localStorage.getItem('username');
-							myInfo.playerColor = getColor(username, room);
-							myInfo.status = getStatus(username, room);
-
-							roundIndex = room.roundIndex;
-
-							scope.tipPosiList && (scope.tipPosiList.length = 0);
-							showTip();
-
-							procRound(room);
-							procChessList(room);
-
-							console.log('status', myInfo.status);
-							statusMachineDict[myInfo.status]();
-						})
-				};
-
-				var procChessList = function(room) {
-					if (room.currChessId != undefined) {
-						_.find(room.chessList, function(ch) {
-							if (ch.id == room.currChessId) {
-								ch.isSelected = true;
-								return true;
-							}
-						})
-					}
-				};
-
-				var procRound = function(room) {
-					var playerList = room.playerList;
-					var redPlayer = _.find(playerList, function(p) {
-						return p.playerColor == 0;
-					});
-					if (redPlayer) {
-						scope.red = {
-							status: redPlayer.status,
-							playerName: redPlayer.playerName,
-							energy: redPlayer.energy
-						};
-					}
-					var blackPlayer = _.find(playerList, function(p) {
-						return p.playerColor == 1;
-					});
-					if (blackPlayer) {
-						scope.black = {
-							status: blackPlayer.status,
-							playerName: blackPlayer.playerName,
-							energy: blackPlayer.energy
-						};
-					}
-
-				};
-
-				var isInit = false;
-
-				var afterInitRoom = function() {
-					// myInfo
-					console.log('afterInitRoom');
-					var room = scope.room;
-					myInfo.playerColor = getColor(myInfo.username, room);
-					myInfo.status = getStatus(myInfo.username, room);
-
-					console.log('status', myInfo.status);
-					statusMachineDict[myInfo.status]();
-				};
-
-
-				var getColor = function(playerName, room) {
-					var p = _.find(room.playerList, function(p) {
-						return p.playerName == myInfo.username;
 					});
 
-					return p ? p.playerColor : null;
-				}
+				});
 
-				var statusMachineDict = {
-					// 尚未开始
-					'0': function(){},
-					// 不是我的回合
-					'1': function() {
-						console.log('not my turn');
-						
-						// 发送心跳
-						var heartBeat =function(){
-							karazhan.heartBeat(token,room.id)
-								.success(function(data){
-									if(data.flag){
-										if(!data.isNew){
-											heartBeat();
-										}else{
-											refresh();
-										}
-									}
-								});
-
-						};
-						heartBeat();
-					},
-					// 2.x 表示都是我的回合
-					// 还没有选择棋子
-					'2.0': function() {
-						karazhan.getLastChanges(token,room.id,roundIndex)
-							.success(function(data){
-								setTimeout(function(){
-									chgStack = chgStack.concat(data.changes);
-									animateByChgs(data.changes);
-
-								},500);
-								
-							});
-						karazhan.getActiveChessList(token, room.id)
-							.success(function(data) {
-								console.log(data);
-								var chessIdList = data.chessIdList;
-								scope.tipPosiList = chessIdList.map(function(chId) {
-									return _.find(room.chessList, function(n) {
-										return n.id == chId;
-									}).posi;
-								});
-								scope.tipType = 'chess';
-							});
-					},
-					// 棋子还没有移动
-					'2.1': function() {
-						karazhan.getMoveRange(token, room.id)
-							.success(function(data) {
-								scope.tipType = 'move';
-								scope.tipPosiList = data.positionList;
-							});
-
-						karazhan.getActiveSkillList(token, room.id)
-							.success(function(data) {
-								scope.skillList = data.skillList;
-
-								if (room.currSkillId != undefined) {
-									_.find(scope.skillList, function(sk) {
-										if (sk.id == room.currSkillId) {
-											sk.isSelected = true;
-											return true;
-										}
-									});
-
-									karazhan.getSkillTargetList(token, room.id)
-										.success(function(data) {
-											// scope.skillTargetList = data.positionList;
-
-											scope.tipType = 'target';
-											scope.tipPosiList = data.positionList;
-										});
-								}
-							});
-					},
-					// 还没有选择技能
-					'2.2': function() {
-						karazhan.getActiveSkillList(token, room.id)
-							.success(function(data) {
-								scope.skillList = data.skillList;
-							});
-					},
-					// 还没有选择技能的目标
-					'2.3': function() {
-						karazhan.getActiveSkillList(token, room.id)
-							.success(function(data) {
-								scope.skillList = data.skillList;
-
-								if (room.currSkillId != undefined) {
-									_.find(scope.skillList, function(sk) {
-										if (sk.id == room.currSkillId) {
-											sk.isSelected = true;
-											return true;
-										}
-									});
-
-									karazhan.getSkillTargetList(token, room.id)
-										.success(function(data) {
-											// scope.skillTargetList = data.positionList;
-
-											scope.tipType = 'target';
-											scope.tipPosiList = data.positionList;
-										});
-								}
-							});
-
-
-
-					},
-
-					// server给的status
-					// beforeStart,
-					// red,
-					// black,
-					// gameOver
-
-
-
-					// 已经结束
-					'3': function(){
-						
-					}
-				};
-
-				var getStatus = function(playerName, room) {
-					// 如果游戏尚未开始,或者已经结束
-					if (room.status == 0 || room.status == 3) {
-						return room.status;
-					}
-					// 不是我的回合
-					if (room.currPlayerName != playerName) {
-						return 1;
-					}
-
-					// 我的回合
-					// 包括其中的所有状态
-					if (room.currChessId == undefined) {
-						return '2.0';
-					} else {
-						var ch = _.find(room.chessList, function(ch) {
-							return ch.id == room.currChessId;
-						});
-						if (!ch) {
-							throw "chess not exist";
-						}
-
-						/*
-							// 被选择前
-							beforeChoose,
-							// 移动前
-							beforeMove,
-							// 使用技能前
-							beforeCast,
-							rest
-						*/
-						if (ch.status == 1) {
-							return '2.1';
-						} else if (ch.status == 2) {
-							if (room.currSkillId == undefined) {
-								return '2.2';
-							} else {
-								return '2.3';
-							}
-						}
-					}
-
-				};
-
-
-
-				// 个人信息
-				var myInfo = scope.myInfo = {
-					username: localStorage.getItem('username'),
-					playerColor: null,
-					status: null
-				};
-
-
+				scope.$on('chooseBox.touch', function(e, data) {
+					userAct(gameStatus, {
+						x: data.x,
+						y: data.y
+					});
+				});
 
 
 
@@ -661,52 +518,15 @@ angular
 						showTip();
 					}
 
-				});
+				}, true);
 
 
-				scope.$on('chooseBox.touch', function(e, data) {
-					touchManager({
-						x: data.x,
-						y: data.y
-					});
-				});
-
-
-				scope.$on('skill.touch', function(e, data) {
-					var skillList = scope.skillList;
-					// 被点击的skill的id
-					var skId = data;
-					// 被选择的skill的id
-					var skIdSelected = null;
-					// 是否有反选
-					var hasUnChoose = false;
-					_.each(skillList, function(sk) {
-						if (sk.isSelected && sk.id != skId) {
-							sk.isSelected = false;
-							hasUnChoose = true;
-						}
-					});
-
-					var sk = _.find(skillList, function(sk) {
-						return sk.id == skId;
-					});
-					sk.isSelected = !sk.isSelected;
-					if (!sk.isSelected) {
-						hasUnChoose = true;
-					} else {
-						skIdSelected = sk.id;
-					}
-
-					act.chooseSkill(skIdSelected, hasUnChoose);
-				});
-
-				refresh();
 
 			}
 		}
 	}])
 
-	.directive('chooseBox', [function() {
+.directive('chooseBox', [function() {
 		return {
 			restrict: 'E',
 			templateUrl: '/templates/chooseBox.html',

@@ -30,6 +30,7 @@ angular
 					energy: 2
 				};
 
+				var username = scope.username = localStorage.getItem('username');
 				var token = localStorage.getItem('token');
 				var roomId = scope.roomId;
 				var room;
@@ -48,7 +49,19 @@ angular
 				scope.tipType = undefined;
 				window.tpl = tipPosiList;
 
-				// 获取初始状态
+				// 获取状态
+				var myInfo = {};
+				scope.myInfo = function(key, value) {
+					if (key === undefined && value === undefined) {
+						return myInfo;
+					}
+					if (value === undefined) {
+						return myInfo[key];
+					} else {
+						myInfo[key] = value;
+					}
+				};
+
 
 
 				// 处理changes
@@ -59,7 +72,7 @@ angular
 
 					if (!isSlient) {
 						arr.push(function(cb) {
-							$timeout(cb, 500);
+							$timeout(cb, 50);
 						});
 
 						arr.push(function(cb) {
@@ -89,7 +102,8 @@ angular
 				// proc data
 				function procChgData(chg) {
 					var dict = {};
-					dict['position'] = function(detail) {
+					dict[changeTypeDict.position] = function(chg) {
+						var detail = chg.detail;
 						var chessId = detail.sourceChessId;
 
 						var ch = _.find(room.chessList, function(ch) {
@@ -98,9 +112,25 @@ angular
 						ch.posi = detail.abs;
 					};
 
-					if (chg.type == changeTypeDict.position) {
-						dict['position'](chg.detail);
-					}
+					dict[changeTypeDict.hp] = function(chg) {
+						var detail = chg.detail;
+						var chessId = detail.targetChessId;
+
+						var ch = _.find(room.chessList, function(ch) {
+							return ch.id == chessId;
+						});
+						ch.hp = detail.abs;
+					};
+
+					dict[changeTypeDict.energy] = function(chg) {
+						var playerName = chg.playerName;
+						var p = _.find(room.playerList, function(p) {
+							return p.name === playerName;
+						});
+						p.energy = chg.detail.abs;
+					};
+
+					dict[chg.type](chg);
 
 				}
 
@@ -115,18 +145,93 @@ angular
 						chBox.animate({
 							left: position.x * boxSize + 'rem',
 							top: position.y * boxSize + 'rem'
-						}, 500, function() {
+						}, 200, function() {
 							cb();
 							scope.$apply();
+						});
+					};
+
+					dict['hurt'] = function(chg, cb) {
+						var currChess = _.find(room.chessList, function(ch) {
+							return ch.id == chg.detail.sourceChessId;
+						});
+						var tagetChess = _.find(room.chessList, function(ch) {
+							return ch.id == chg.detail.targetChessId;
+						});
+
+						var box = $('[chid="' + tagetChess.id + '"]');
+						var orgiginLeft = box.css('left').replace('px', '') / 100;
+						var orgiginTop = box.css('top').replace('px', '') / 100;
+						box.addClass('inHurt');
+						var arr = [];
+						var count = 4;
+						while (count--) {
+							arr.push({
+								left: (Math.random > .5 ? 1 : -1) * Math.random() / 8,
+								top: (Math.random > .5 ? 1 : -1) * Math.random() / 8
+							});
+						};
+						async.each(arr, function(posi, cb) {
+							box.animate({
+								left: posi.left + orgiginLeft + 'rem',
+								top: posi.top + orgiginTop + 'rem'
+							}, 50, cb);
+
+						}, function(err, data) {
+							box.css({
+								left: orgiginLeft + 'rem',
+								top: orgiginTop + 'rem'
+							});
+							box.removeClass('inHurt');
+
+							cb();
+						});
+					};
+
+					dict['heal'] = function(chg, cb) {
+						var tagetChess = _.find(room.chessList, function(ch) {
+							return ch.id == chg.detail.targetChessId;
+						});
+
+						var box = $('[chid="' + tagetChess.id + '"]');
+						var orgiginTop = box.css('top').replace('px', '') / 100;
+						box.addClass('inHeal');
+						var arr = [];
+						var count = 4;
+						while (count--) {
+							arr.push({
+								top: Math.random() / 8
+							});
+						};
+						async.each(arr, function(posi, cb) {
+							box.animate({
+								top: posi.top + orgiginTop + 'rem'
+							}, 50, cb);
+
+						}, function(err, data) {
+							box.css({
+								top: orgiginTop + 'rem'
+							});
+							box.removeClass('inHeal');
+							cb();
 						});
 					};
 
 					var type = chg.type;
 					if (type == changeTypeDict.position) {
 						dict['move'](chg, cb);
+					} else if (type == changeTypeDict.hp) {
+						if (chg.detail.rela < 0) {
+							dict['hurt'](chg, cb);
+
+						} else {
+							dict['heal'](chg, cb);
+						}
 					} else {
 						cb();
 					}
+
+
 				}
 
 				function getSnapshot(cb) {
@@ -146,7 +251,11 @@ angular
 					karazhan.getStatus(token, roomId)
 						.success(function(data) {
 							if (data.flag) {
-								gameStatus = data.status;
+								scope.gameStatus = data.status;
+								scope.currPlayerName = data.playerName;
+								scope.room.currSkillId = data.currSkillId;
+								scope.room.currChessId = data.currChessId;
+								scope.room.skillList = data.skillList;
 								cb();
 							}
 						});
@@ -236,52 +345,82 @@ angular
 				function setActiveSkillList(cb) {
 					karazhan.getActiveSkillList(token, roomId)
 						.success(function(data) {
-							scope.skillList = data.skillList;
+							scope.room.skillList = data.skillList;
 
-							if (room.currSkillId != undefined) {
-								_.find(scope.skillList, function(sk) {
-									if (sk.id == room.currSkillId) {
-										sk.isSelected = true;
-										return true;
-									}
-								});
-
-
-							}
 						});
 				}
 
 				function setSkillTargetList(cb) {
-					karazhan.getSkillTargetList(token, room.id)
+					karazhan.getSkillTargetList(token, roomId)
 						.success(function(data) {
 							// scope.skillTargetList = data.positionList;
-							if (data.flag)
+							if (data.flag) {
 								scope.tipType = 'target';
-							scope.tipPosiList = data.positionList;
+								scope.tipPosiList = data.positionList;
+							}
 						});
 				}
+
+				// 清空
+				function clear() {
+					scope.currPlayerName = undefined;
+					scope.room.currChessId = undefined;
+					scope.room.currSkillId = undefined;
+					scope.room.skillList = [];
+				}
+
+				// 刷新
+				function refresh() {
+					clear();
+					getStatus(function() {
+						gameAct(scope.gameStatus);
+					});
+				};
+
 
 				// 系统Act
 				function gameAct(status) {
 					// 清空
 					scope.tipPosiList.length = 0;
 
-					if (gameStatus == statusDict.beforeStart) {
+					if (status == statusDict.beforeStart) {
 
-					} else if (gameStatus == statusDict.gameOver) {
+					} else if (status == statusDict.gameOver) {
 
-					} else if (gameStatus == statusDict.notMyTurn) {
-						// todo
-						room.currChessId = undefined;
-						room.currSkillId = undefined;
-						scope.tipPosiList.length = 0;
+					} else if (status == statusDict.notMyTurn) {
 						// heartbeat
-					} else if (gameStatus == statusDict.beforeChooseChess) {
+						// 发送心跳
+						var heartBeat = function() {
+							karazhan.heartBeat(token, roomId)
+								.success(function(data) {
+									if (data.flag) {
+										if (!data.isNew) {
+											heartBeat();
+										} else {
+											getChgs(chgStack.length - 1, function() {
+												getStatus(function() {
+													gameAct(scope.gameStatus);
+												});
+											});
+										}
+									}
+								});
+
+						};
+						heartBeat();
+
+					} else if (status == statusDict.beforeChooseChess) {
 						setActiveChessList();
-					} else if (gameStatus == statusDict.beforeMove) {
+					} else if (status == statusDict.beforeMove) {
+						if (room.currSkillId !== undefined) {
+
+						}
 						setMoveRange();
-					} else if (gameStatus == statusDict.beforeChooseSkill) {
-						getSkillTargetList();
+						setActiveSkillList();
+					} else if (status == statusDict.beforeChooseSkill) {
+						setActiveSkillList();
+					} else if (status = statusDict.beforeChooseSkillTarget) {
+						setSkillTargetList();
 					}
 				}
 
@@ -321,46 +460,37 @@ angular
 							});
 					},
 					// 选择技能
-					// hasUnChoose -> 是否有反选
-					"chooseSkill": function(skillId, hasUnChoose) {
-						var arr = [];
-						if (hasUnChoose) {
-							arr.push(function(cb) {
-								karazhan.unChooseSkill(token, room.id, skillId)
-									.success(function(data) {
-										cb(!data.flag);
-									});
-							})
-						}
-
-						if (skillId != null) {
-							arr.push(function(cb) {
-								karazhan.chooseSkill(token, room.id, skillId)
-									.success(function(data) {
-										cb(!data.flag);
-									});
+					"chooseSkill": function(skillId, cb) {
+						karazhan.chooseSkill(token, roomId, skillId)
+							.success(function(data) {
+								if (data.flag) {
+									cb();
+								}
 							});
-						}
 
-						async.series(arr, function(err) {
-							!err && refresh();
-						});
+					},
+					"unChooseSkill": function(cb) {
+						karazhan.unChooseSkill(token, roomId)
+							.success(function(data) {
+								if (data.flag) {
+									cb();
+								}
+							});
 					},
 
 					// 选择技能目标(施放技能)
-					"chooseSkillTarget": function(posi) {
+					"chooseSkillTarget": function(posi, cb) {
 						var currChessId = room.currChessId;
 						var currSkillId = room.currSkillId;
-						karazhan.chooseSkillTarget(token, room.id, posi)
+						karazhan.chooseSkillTarget(token, roomId, posi)
 							.success(function(data) {
 								if (data.flag) {
-									chgStack.push(data.changes);
-									animateByChgs(data.changes, refresh);
+									getChgs(chgStack.length - 1, cb);
 								}
 							});
 					},
 					'rest': function() {
-						karazhan.rest(token, room.id)
+						karazhan.rest(token, roomId)
 							.success(function(data) {
 								if (data.flag) {
 									refresh();
@@ -368,7 +498,7 @@ angular
 							});
 					},
 					'surrender': function() {
-						karazhan.surrender(token, room.id)
+						karazhan.surrender(token, roomId)
 							.success(function(data) {
 								if (data.flag) {
 									refresh();
@@ -377,22 +507,19 @@ angular
 					}
 				};
 
-				function userAct(status, posi, cb) {
-					var isInTip = isInTipPosiList(posi);
-
-					var refresh = function() {
-						getStatus(function() {
-							gameAct(gameStatus);
-						});
-					};
+				function userAct(status, option) {
 					// 尚未选择棋子
 					if (status == statusDict.beforeChooseChess) {
+						var posi = option.posi;
+						var isInTip = isInTipPosiList(posi);
 						if (isInTip) {
 							act.chooseChess(posi, refresh);
 						}
 					}
 					// 已经选择了棋子
 					else if (status == statusDict.beforeMove) {
+						var posi = option.posi;
+						var isInTip = isInTipPosiList(posi);
 						if (isInTip) {
 							if (!room.currSkillId) {
 								act.moveChess(posi, refresh);
@@ -404,10 +531,12 @@ angular
 					}
 					// 已经选择了技能
 					else if (status == statusDict.beforeChooseSkillTarget) {
+						var posi = option.posi;
+						var isInTip = isInTipPosiList(posi);
 						if (isInTip) {
-							act.chooseSkillTarget(posi);
+							act.chooseSkillTarget(posi, refresh);
 						} else {
-							act.unChooseSkill();
+							act.unChooseSkill(refresh);
 						}
 					}
 
@@ -420,6 +549,15 @@ angular
 						});
 					}
 				}
+
+				scope.rest = function() {
+					act['rest']();
+				};
+
+				scope.surrender = function() {
+					act['surrender']();
+				};
+
 
 				// create chessBoard ground
 				var createBasicLayer = function() {
@@ -491,10 +629,12 @@ angular
 					createTipLayer();
 
 
+
 					$timeout(function() {
 						getChgs(chgStack.length - 1, function() {
 							getStatus(function() {
-								gameAct(gameStatus);
+
+								gameAct(scope.gameStatus);
 
 								isFirstEnter = false;
 							});
@@ -504,10 +644,49 @@ angular
 				});
 
 				scope.$on('chooseBox.touch', function(e, data) {
-					userAct(gameStatus, {
+					var posi = {
 						x: data.x,
 						y: data.y
+					};
+					userAct(scope.gameStatus, {
+						posi: posi
 					});
+				});
+
+				scope.$on('skill.touch', function(e, data) {
+					var hasUnChoose = false;
+					var skId = scope.room.currSkillId;
+					if (skId === undefined) {
+						skId = data;
+					} else {
+						hasUnChoose = true;
+						if (skId === data) {
+							skId = undefined;
+						} else {
+							skId = data;
+						}
+					}
+
+					var arr = [];
+
+					if (hasUnChoose) {
+						arr.push(function(cb) {
+							act.unChooseSkill(cb);
+						});
+					}
+
+					if (skId !== undefined) {
+						arr.push(function(cb) {
+							act.chooseSkill(skId, cb);
+						});
+					}
+
+					async.series(arr, function(err, data) {
+						getStatus(function() {
+							gameAct(scope.gameStatus);
+						});
+					});
+
 				});
 
 

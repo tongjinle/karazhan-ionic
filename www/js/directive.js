@@ -72,7 +72,7 @@ angular
 
 					if (!isSlient) {
 						arr.push(function(cb) {
-							$timeout(cb, 50);
+							$timeout(cb, 250);
 						});
 
 						arr.push(function(cb) {
@@ -175,7 +175,7 @@ angular
 							box.animate({
 								left: posi.left + orgiginLeft + 'rem',
 								top: posi.top + orgiginTop + 'rem'
-							}, 50, cb);
+							}, 100, cb);
 
 						}, function(err, data) {
 							box.css({
@@ -206,7 +206,7 @@ angular
 						async.each(arr, function(posi, cb) {
 							box.animate({
 								top: posi.top + orgiginTop + 'rem'
-							}, 50, cb);
+							}, 100, cb);
 
 						}, function(err, data) {
 							box.css({
@@ -556,6 +556,32 @@ angular
 
 				scope.surrender = function() {
 					act['surrender']();
+				};
+
+
+				scope.getChessDesc = function(chessId) {
+					if (chessId === undefined || !room.chessList) {
+						return '';
+					}
+					var ch = _.find(room.chessList, function(ch) {
+						return ch.id == chessId;
+					});
+					return karazhanDesc.getChessDesc(ch.type);
+				};
+
+
+				scope.getSkillTypeList = function(chType) {
+					if (!room || !room.chessList || !room.currChessId) {
+						return [];
+					}
+					var ch = _.find(room.chessList, function(ch) {
+						return ch.id == room.currChessId;
+					});
+					return karazhanDesc.getSkillListByChessType(ch.type);
+				};
+
+				scope.getSkillDesc = function(type) {
+					return karazhanDesc.getSkillDesc(type);
 				};
 
 

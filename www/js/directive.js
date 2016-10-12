@@ -14,7 +14,7 @@ angular
 				var boxSize = scope.boxSize = .5;
 
 
-				var statusDict = {
+				var statusDict = scope.statusDict = {
 					beforeStart: 0,
 					notMyTurn: 1,
 					beforeChooseChess: 2,
@@ -256,6 +256,7 @@ angular
 								scope.room.currSkillId = data.currSkillId;
 								scope.room.currChessId = data.currChessId;
 								scope.room.skillList = data.skillList;
+								scope.judge = data.judge;
 								cb();
 							}
 						});
@@ -263,10 +264,12 @@ angular
 
 
 				// 获取changes
-				function getChgs(roundIndex, cb) {
-					karazhan.getChanges(token, roomId, roundIndex)
+				function getChgs(changeIndex, cb) {
+					karazhan.getChanges(token, roomId, changeIndex)
 						.success(function(data) {
 							if (data.flag) {
+								room.roundIndex = getMaxRound(data.changes).round;
+
 								if (isFirstEnter) {
 									var parts = sliceChangesByRound(data.changes);
 									var arr = [];
@@ -289,9 +292,7 @@ angular
 						});
 
 					function sliceChangesByRound(changes) {
-						var maxRound = _.max(changes, function(chg) {
-							return chg.round;
-						});
+						var maxRound = getMaxRound(changes);
 						var maxRoundIndex = maxRound ? maxRound.round : 0;
 
 						var prev = _.filter(changes, function(chg) {
@@ -304,6 +305,12 @@ angular
 							prev: prev,
 							last: last
 						};
+					}
+
+					function getMaxRound(changes) {
+						return _.max(changes, function(chg) {
+							return chg.round;
+						});
 					}
 				}
 

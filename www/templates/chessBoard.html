@@ -47,23 +47,23 @@
 		
 	</div>
 
-	<div ng-show="username == currPlayerName" class="skill-layer" ng-style="{'top':room.height*boxSize + roundLayerHeight +'rem'}">
+	<div ng-if="username == currPlayerName && gameStatus!==statusDict.gameOver" class="skill-layer" ng-style="{'top':room.height*boxSize + roundLayerHeight +'rem'}">
 		<skill ng-repeat ="sk in room.skillList" >
 		</skill>
 		<div class="surrender" ng-click="surrender()">投降</div>
 		<div class="rest" ng-click="rest()">休息</div>
 	</div>
 
-	<div class="chessDesc" ng-show="room.currChessId">
+	<div class="chessDesc" ng-show="room.currChessId && gameStatus!==statusDict.gameOver">
 		{{getChessDesc(room.currChessId)}}
 	</div>
-	<div class="skillDesc" ng-show="room.currChessId">
+	<div class="skillDesc" ng-show="room.currChessId && gameStatus!==statusDict.gameOver">
 		<div ng-repeat="skType in getSkillTypeList()">
 			{{getSkillDesc(skType)}}
 		</div>
 	</div>
 
-	<div class="judge" ng-class="'judge-' + (room.winColor == 0 ? 'red' : 'black')" ng-show="room.status === 3">
+	<div class="judge" ng-class="'judge-' + (judge == 0 ? 'red' : 'black')" ng-if="gameStatus === statusDict.gameOver">
 		WIN
 	</div>
 
